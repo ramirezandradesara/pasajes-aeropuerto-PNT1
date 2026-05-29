@@ -1,0 +1,12 @@
+.vs/
+bin/
+obj/
+*.suo
+*.user
+*.pdb
+*.designer.cs
+*.log
+*.bak
+packages/
+PasajesAeropuerto/bin/
+PasajesAeropuerto/obj/
