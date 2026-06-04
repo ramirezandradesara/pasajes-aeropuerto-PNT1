@@ -25,14 +25,12 @@ namespace PasajesAeropuerto.Data
         {
             base.OnModelCreating(modelBuilder);
 
-            // Seed para Avion
             modelBuilder.Entity<Avion>().HasData(
                 new Avion { Id = 1, Modelo = "Boeing 737", Capacidad = 160, Matricula = "LV-CKS" },
                 new Avion { Id = 2, Modelo = "Airbus A320", Capacidad = 150, Matricula = "LV-GUR" },
                 new Avion { Id = 3, Modelo = "Embraer 190", Capacidad = 96, Matricula = "LV-CHO" }
             );
 
-            // Seed para Destino
             modelBuilder.Entity<Destino>().HasData(
                 new Destino { Id = 1, Nombre = "Buenos Aires", Km = 0.0, PrecioBase = 0.00m },
                 new Destino { Id = 2, Nombre = "Bariloche", Km = 1350.5, PrecioBase = 45000.00m },
@@ -40,7 +38,6 @@ namespace PasajesAeropuerto.Data
                 new Destino { Id = 4, Nombre = "Córdoba", Km = 700.0, PrecioBase = 22000.00m }
             );
 
-            // Seed para Vuelo
             modelBuilder.Entity<Vuelo>().HasData(
                 new Vuelo
                 {

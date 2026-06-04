@@ -1,0 +1,175 @@
+:root {
+    --primary-color: #003366;
+    --secondary-color: #00509E;
+    --accent-color: #FF6B00;
+    --light-bg: #F4F7F6;
+    --text-dark: #2C3E50;
+}
+
+body.aeropuerto-page {
+    font-family: 'Inter', sans-serif;
+    color: var(--text-dark);
+    background-color: var(--light-bg);
+    margin-bottom: 0;
+}
+
+.aeropuerto-page .navbar {
+    background-color: rgba(255, 255, 255, 0.95) !important;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 2px 15px rgba(0, 0, 0, 0.05);
+    padding: 15px 0;
+}
+
+.aeropuerto-page .navbar-brand {
+    color: var(--primary-color) !important;
+    font-weight: 700;
+    font-size: 1.5rem;
+}
+
+.aeropuerto-page .navbar-brand i {
+    color: var(--accent-color);
+    margin-right: 8px;
+}
+
+.aeropuerto-page .nav-link {
+    color: var(--text-dark) !important;
+    font-weight: 500;
+    padding: 0.5rem 1rem !important;
+    transition: color 0.3s ease;
+}
+
+.aeropuerto-page .nav-link:hover {
+    color: var(--accent-color) !important;
+}
+
+.hero-section {
+    position: relative;
+    background: url('https://images.unsplash.com/photo-1436491865332-7a61a109cc05?auto=format&fit=crop&w=1920&q=80') no-repeat center center/cover;
+    height: 600px;
+    display: flex;
+    align-items: center;
+}
+
+.hero-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(to right, rgba(0, 51, 102, 0.8), rgba(0, 51, 102, 0.4));
+}
+
+.hero-content {
+    position: relative;
+    z-index: 2;
+    color: white;
+}
+
+.hero-title {
+    font-size: 3.5rem;
+    font-weight: 700;
+    margin-bottom: 20px;
+}
+
+.search-widget {
+    background: white;
+    border-radius: 16px;
+    padding: 30px;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+    margin-top: -80px;
+    position: relative;
+    z-index: 10;
+}
+
+.search-widget .nav-tabs .nav-link {
+    color: var(--text-dark);
+    border: none;
+    font-weight: 600;
+    padding: 10px 25px;
+    border-radius: 8px 8px 0 0;
+}
+
+.search-widget .nav-tabs .nav-link.active {
+    color: var(--primary-color);
+    border-bottom: 3px solid var(--accent-color);
+    background: transparent;
+}
+
+.form-control-custom,
+.search-widget .form-select.form-control-custom {
+    background-color: #f8f9fa;
+    border: 1px solid #e9ecef;
+    padding: 12px 20px;
+    border-radius: 8px;
+}
+
+.form-control-custom:focus,
+.search-widget .form-select.form-control-custom:focus {
+    box-shadow: none;
+    border-color: var(--primary-color);
+}
+
+.btn-accent {
+    background-color: var(--accent-color);
+    color: white;
+    font-weight: 600;
+    padding: 12px 30px;
+    border-radius: 8px;
+    border: none;
+    transition: background 0.3s;
+}
+
+.btn-accent:hover {
+    background-color: #e65c00;
+    color: white;
+}
+
+.aeropuerto-page .footer {
+    background-color: var(--primary-color);
+    color: rgba(255, 255, 255, 0.7);
+    padding: 40px 0 20px;
+    margin-top: 3rem;
+}
+
+.form-container h2 {
+    font-weight: 700;
+    color: var(--primary-color);
+    margin-bottom: 1.25rem;
+}
+
+.form-container .form-group {
+    margin-bottom: 1rem;
+}
+
+.form-container label {
+    display: block;
+    font-weight: 600;
+    font-size: 0.875rem;
+    color: var(--text-dark);
+    margin-bottom: 0.35rem;
+}
+
+.btn-submit {
+    background-color: var(--accent-color);
+    color: white;
+    font-weight: 600;
+    padding: 12px 30px;
+    border-radius: 8px;
+    border: none;
+    transition: background 0.3s;
+}
+
+.btn-submit:hover {
+    background-color: #e65c00;
+    color: white;
+}
+
+@media (max-width: 768px) {
+    .hero-title {
+        font-size: 2.25rem;
+    }
+
+    .hero-section {
+        height: 480px;
+    }
+}
