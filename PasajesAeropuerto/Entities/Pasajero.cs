@@ -22,5 +22,7 @@ namespace PasajesAeropuerto.Entities
         [Required]
         [MaxLength(150)]
         public string Email { get; set; } = string.Empty;
+
+        public ICollection<Equipaje> Equipajes { get; set; } = new List<Equipaje>();
     }
 }

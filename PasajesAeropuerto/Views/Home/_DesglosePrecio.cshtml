@@ -1,0 +1,142 @@
+@using PasajesAeropuerto.Services
+@model SimulacionPrecioResultado
+@{
+    var claseLabel = Model.Clase switch
+    {
+        "Primera" => "Primera clase",
+        "Business" => "Business",
+        _ => "Económica"
+    };
+}
+
+<div class="precio-pasaje-card mt-4">
+    <div class="precio-pasaje-header">
+        <div class="precio-pasaje-header-icon">
+            <i class="fa-solid fa-receipt"></i>
+        </div>
+        <div>
+            <h3 class="precio-pasaje-title mb-0">Precio del pasaje</h3>
+            <p class="precio-pasaje-subtitle mb-0">Desglose estimado antes de emitir</p>
+        </div>
+    </div>
+
+    <div class="precio-pasaje-body">
+        <div class="precio-meta-grid">
+            <div class="precio-meta-item">
+                <span class="precio-meta-label"><i class="fa-solid fa-location-dot me-1"></i>Destino</span>
+                <span class="precio-meta-value">@Model.DestinoNombre</span>
+            </div>
+            <div class="precio-meta-item">
+                <span class="precio-meta-label"><i class="fa-solid fa-plane me-1"></i>Vuelo</span>
+                <span class="precio-meta-value">@Model.VueloNumero</span>
+            </div>
+            <div class="precio-meta-item">
+                <span class="precio-meta-label"><i class="fa-regular fa-calendar me-1"></i>Fecha</span>
+                <span class="precio-meta-value">@Model.FechaVuelo.ToString("dd/MM/yyyy")</span>
+            </div>
+            <div class="precio-meta-item">
+                <span class="precio-meta-label"><i class="fa-solid fa-chair me-1"></i>Clase</span>
+                <span class="precio-meta-value">@claseLabel</span>
+            </div>
+        </div>
+
+        @if (Model.AplicoTemporadaAlta || Model.EsFinDeSemana)
+        {
+            <div class="precio-badges">
+                @if (Model.AplicoTemporadaAlta)
+                {
+                    <span class="precio-badge precio-badge-alta"><i class="fa-solid fa-sun me-1"></i>Temporada alta</span>
+                }
+                @if (Model.EsFinDeSemana)
+                {
+                    <span class="precio-badge precio-badge-weekend"><i class="fa-solid fa-calendar-week me-1"></i>Fin de semana</span>
+                }
+            </div>
+        }
+
+        <div class="precio-lineas">
+            <div class="precio-linea">
+                <span class="precio-linea-concepto">
+                    <i class="fa-solid fa-tag precio-linea-icon"></i>
+                    Precio base del destino
+                </span>
+                <span class="precio-linea-monto">@Model.PrecioBaseDestino.ToString("C")</span>
+            </div>
+            <div class="precio-linea">
+                <span class="precio-linea-concepto">
+                    <i class="fa-solid fa-layer-group precio-linea-icon"></i>
+                    @claseLabel <small class="text-muted">(×@Model.FactorClase · @Model.KgIncluidos kg)</small>
+                </span>
+                <span class="precio-linea-monto">@Model.PrecioConClase.ToString("C")</span>
+            </div>
+            @if (Model.AplicoTemporadaAlta)
+            {
+                <div class="precio-linea precio-linea-extra">
+                    <span class="precio-linea-concepto">
+                        <i class="fa-solid fa-arrow-trend-up precio-linea-icon"></i>
+                        Temporada alta <small class="text-muted">(×@Model.FactorTemporadaAlta)</small>
+                    </span>
+                    <span class="precio-linea-monto">@Model.PrecioTrasTemporada.ToString("C")</span>
+                </div>
+            }
+            @if (Model.EsFinDeSemana)
+            {
+                <div class="precio-linea precio-linea-extra">
+                    <span class="precio-linea-concepto">
+                        <i class="fa-solid fa-plus precio-linea-icon"></i>
+                        Recargo fin de semana <small class="text-muted">(+15%)</small>
+                    </span>
+                    <span class="precio-linea-monto precio-linea-monto-plus">+@Model.RecargoFinDeSemana.ToString("C")</span>
+                </div>
+            }
+            @if (Model.EquipajeValija)
+            {
+                <div class="precio-linea precio-linea-extra">
+                    <span class="precio-linea-concepto">
+                        <i class="fa-solid fa-suitcase precio-linea-icon"></i>
+                        Valija
+                    </span>
+                    <span class="precio-linea-monto precio-linea-monto-plus">+@Model.RecargoValija.ToString("C")</span>
+                </div>
+            }
+            @if (Model.EquipajeAdicional)
+            {
+                <div class="precio-linea precio-linea-extra">
+                    <span class="precio-linea-concepto">
+                        <i class="fa-solid fa-box precio-linea-icon"></i>
+                        Equipaje adicional
+                    </span>
+                    <span class="precio-linea-monto precio-linea-monto-plus">+@Model.RecargoEquipajeAdicional.ToString("C")</span>
+                </div>
+            }
+
+            <div class="precio-linea precio-linea-subtotal">
+                <span class="precio-linea-concepto">
+                    <i class="fa-solid fa-user precio-linea-icon"></i>
+                    Precio por persona
+                </span>
+                <span class="precio-linea-monto">@Model.PrecioPorPersona.ToString("C")</span>
+            </div>
+            <div class="precio-linea precio-linea-personas">
+                <span class="precio-linea-concepto text-muted">
+                    <i class="fa-solid fa-users precio-linea-icon"></i>
+                    Cantidad de pasajeros
+                </span>
+                <span class="precio-linea-monto text-muted">× @Model.CantPersonas</span>
+            </div>
+        </div>
+
+        <div class="precio-total-box">
+            <div class="precio-total-label">
+                <i class="fa-solid fa-circle-check me-2"></i>
+                Total estimado
+            </div>
+            <div class="precio-total-monto">@Model.Total.ToString("C")</div>
+        </div>
+
+        <p class="precio-nota">
+            <i class="fa-solid fa-circle-info me-1"></i>
+            Los importes son una simulación. Al emitir el pasaje se guardará este total en la reserva.
+        </p>
+    </div>
+</div>

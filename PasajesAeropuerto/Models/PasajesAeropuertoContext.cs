@@ -20,6 +20,8 @@ namespace PasajesAeropuerto.Data
         public DbSet<Pasajero> Pasajeros { get; set; }
         public DbSet<Reserva> Reservas { get; set; }
         public DbSet<Vuelo> Vuelos { get; set; }
+        public DbSet<TipoEquipaje> TiposEquipaje { get; set; }
+        public DbSet<Equipaje> Equipajes { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -37,6 +39,27 @@ namespace PasajesAeropuerto.Data
                 new Destino { Id = 3, Nombre = "Mendoza", Km = 1050.2, PrecioBase = 32000.00m },
                 new Destino { Id = 4, Nombre = "Córdoba", Km = 700.0, PrecioBase = 22000.00m }
             );
+
+            modelBuilder.Entity<TipoEquipaje>().HasData(
+                new TipoEquipaje { Id = 1, Nombre = "Equipaje de mano", Recargo = 0.00m },
+                new TipoEquipaje { Id = 2, Nombre = "Valija", Recargo = 8000.00m },
+                new TipoEquipaje { Id = 3, Nombre = "Equipaje adicional", Recargo = 12000.00m }
+            );
+
+            modelBuilder.Entity<Equipaje>(entity =>
+            {
+                entity.HasOne(e => e.Pasajero)
+                    .WithMany(p => p.Equipajes)
+                    .HasForeignKey(e => e.PasajeroId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(e => e.TipoEquipaje)
+                    .WithMany(t => t.Equipajes)
+                    .HasForeignKey(e => e.TipoEquipajeId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.ToTable(t => t.HasCheckConstraint("CK_Equipaje_Cantidad", "[Cantidad] > 0"));
+            });
 
             modelBuilder.Entity<Vuelo>().HasData(
                 new Vuelo

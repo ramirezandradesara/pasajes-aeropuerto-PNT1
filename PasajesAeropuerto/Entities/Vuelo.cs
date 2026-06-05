@@ -29,7 +29,7 @@ namespace PasajesAeropuerto.Entities
 
         public bool EsFinDeSemana()
         {
-            return false;
+            return FechaSalida.DayOfWeek is DayOfWeek.Saturday or DayOfWeek.Sunday;
         }
     }
 }

@@ -125,6 +125,35 @@ namespace PasajesAeropuerto.Migrations
                         });
                 });
 
+            modelBuilder.Entity("PasajesAeropuerto.Entities.Equipaje", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("Cantidad")
+                        .HasColumnType("int");
+
+                    b.Property<int>("PasajeroId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TipoEquipajeId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PasajeroId");
+
+                    b.HasIndex("TipoEquipajeId");
+
+                    b.ToTable("Equipajes", t =>
+                        {
+                            t.HasCheckConstraint("CK_Equipaje_Cantidad", "[Cantidad] > 0");
+                        });
+                });
+
             modelBuilder.Entity("PasajesAeropuerto.Entities.Pasajero", b =>
                 {
                     b.Property<int>("Id")
@@ -178,6 +207,47 @@ namespace PasajesAeropuerto.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Reservas");
+                });
+
+            modelBuilder.Entity("PasajesAeropuerto.Entities.TipoEquipaje", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Nombre")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<decimal>("Recargo")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("TiposEquipaje");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Nombre = "Equipaje de mano",
+                            Recargo = 0.00m
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Nombre = "Valija",
+                            Recargo = 8000.00m
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Nombre = "Equipaje adicional",
+                            Recargo = 12000.00m
+                        });
                 });
 
             modelBuilder.Entity("PasajesAeropuerto.Entities.Vuelo", b =>
@@ -245,6 +315,35 @@ namespace PasajesAeropuerto.Migrations
                             HoraSalida = new TimeSpan(0, 19, 0, 0, 0),
                             Numero = "FB5200"
                         });
+                });
+
+            modelBuilder.Entity("PasajesAeropuerto.Entities.Equipaje", b =>
+                {
+                    b.HasOne("PasajesAeropuerto.Entities.Pasajero", "Pasajero")
+                        .WithMany("Equipajes")
+                        .HasForeignKey("PasajeroId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("PasajesAeropuerto.Entities.TipoEquipaje", "TipoEquipaje")
+                        .WithMany("Equipajes")
+                        .HasForeignKey("TipoEquipajeId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Pasajero");
+
+                    b.Navigation("TipoEquipaje");
+                });
+
+            modelBuilder.Entity("PasajesAeropuerto.Entities.Pasajero", b =>
+                {
+                    b.Navigation("Equipajes");
+                });
+
+            modelBuilder.Entity("PasajesAeropuerto.Entities.TipoEquipaje", b =>
+                {
+                    b.Navigation("Equipajes");
                 });
 #pragma warning restore 612, 618
         }

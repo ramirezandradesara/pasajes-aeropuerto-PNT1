@@ -1,6 +1,15 @@
-﻿@{
+﻿@using PasajesAeropuerto.Entities
+@using PasajesAeropuerto.Services
+@{
     ViewData["Title"] = "Inicio";
     ViewData["FullWidth"] = true;
+    var simulacion = ViewBag.Simulacion as SimulacionPrecioResultado;
+    var preciosVistos = ViewBag.PreciosVistos == true;
+    var claseSel = ViewBag.Clase as string ?? "Economica";
+    var tiposEquipaje = ViewBag.TiposEquipaje as List<TipoEquipaje> ?? new List<TipoEquipaje>();
+    var tipoMano = tiposEquipaje.FirstOrDefault(t => t.Id == TipoEquipaje.IdMano);
+    var tipoValija = tiposEquipaje.FirstOrDefault(t => t.Id == TipoEquipaje.IdValija);
+    var tipoAdicional = tiposEquipaje.FirstOrDefault(t => t.Id == TipoEquipaje.IdAdicional);
 }
 
 <header class="hero-section">
@@ -9,7 +18,7 @@
         <div class="row">
             <div class="col-lg-8">
                 <h1 class="hero-title">Tu viaje comienza con nosotros.</h1>
-                <p class="lead fs-4">Emití tu pasaje, elegí destino y vuelo en un solo paso.</p>
+                <p class="lead fs-4">Completá los datos, consultá el precio y emití tu pasaje.</p>
             </div>
         </div>
     </div>
@@ -25,14 +34,14 @@
                         <i class="fa-solid fa-circle-check me-2"></i>@mensaje
                     </div>
                 }
-                @if (TempData["Error"] is string error)
+                @if (ViewBag.Error is string error)
                 {
                     <div class="alert alert-danger mb-4" role="alert">@error</div>
                 }
 
-                <div class="form-container">
-                    <h2>Emitir pasaje</h2>
-                    <form asp-action="AgregarPasaje" method="post">
+                <form id="formPasaje" method="post">
+                    <div class="form-container">
+                        <h2><span class="paso-numero">1</span> Datos del viaje</h2>
                         <div class="form-group">
                             <label for="DestinoId">Destino:</label>
                             <select id="DestinoId" name="DestinoId" asp-items="ViewBag.Destinos" class="form-control form-control-custom">
@@ -46,36 +55,101 @@
                             </select>
                         </div>
                         <div class="form-group">
+                            <label for="Clase">Clase de asiento:</label>
+                            <select id="Clase" name="Clase" class="form-control form-control-custom">
+                                @if (claseSel == "Economica")
+                                {
+                                    <option value="Economica" selected>Económica (x1.0 — 23 kg)</option>
+                                }
+                                else
+                                {
+                                    <option value="Economica">Económica (x1.0 — 23 kg)</option>
+                                }
+                                @if (claseSel == "Business")
+                                {
+                                    <option value="Business" selected>Business (x2.0 — 30 kg)</option>
+                                }
+                                else
+                                {
+                                    <option value="Business">Business (x2.0 — 30 kg)</option>
+                                }
+                                @if (claseSel == "Primera")
+                                {
+                                    <option value="Primera" selected>Primera Clase (x3.5 — 40 kg)</option>
+                                }
+                                else
+                                {
+                                    <option value="Primera">Primera Clase (x3.5 — 40 kg)</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="CantPersonas">Cantidad de personas:</label>
+                            <input type="number" id="CantPersonas" name="CantPersonas"
+                                   value="@(ViewBag.CantPersonas ?? 1)" min="1" max="10"
+                                   class="form-control form-control-custom" />
+                        </div>
+                        <div class="form-group">
                             <label for="AvionId">Avión:</label>
                             <select id="AvionId" name="AvionId" asp-items="ViewBag.Aviones" class="form-control form-control-custom">
                                 <option value="">Seleccionar avión...</option>
                             </select>
                         </div>
                         <div class="form-group">
-                            <label for="CantPersonas">Cantidad de personas:</label>
-                            <input type="number" id="CantPersonas" name="CantPersonas" value="1" min="1" max="10" class="form-control form-control-custom" />
+                            <label>Equipaje:</label>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="EquipajeMano" checked disabled />
+                                <label class="form-check-label" for="EquipajeMano">@(tipoMano?.Nombre ?? "Equipaje de mano") (incluido)</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="EquipajeValija" name="EquipajeValija" value="true"
+                                       @(ViewBag.EquipajeValija == true ? "checked" : "") />
+                                <label class="form-check-label" for="EquipajeValija">@(tipoValija?.Nombre ?? "Valija") (+ @(tipoValija?.Recargo.ToString("C0") ?? "$0"))</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="EquipajeAdicional" name="EquipajeAdicional" value="true"
+                                       @(ViewBag.EquipajeAdicional == true ? "checked" : "") />
+                                <label class="form-check-label" for="EquipajeAdicional">@(tipoAdicional?.Nombre ?? "Equipaje adicional") (+ @(tipoAdicional?.Recargo.ToString("C0") ?? "$0"))</label>
+                            </div>
                         </div>
-                        <div class="form-group">
-                            <label for="Nombre">Nombre:</label>
-                            <input type="text" id="Nombre" name="Nombre" class="form-control form-control-custom" />
+                        <div class="mb-4">
+                            <button type="submit" formaction="@Url.Action("VerPrecios")" class="btn btn-accent">
+                                <i class="fa-solid fa-calculator me-2"></i>Ver precios
+                            </button>
                         </div>
-                        <div class="form-group">
-                            <label for="Apellido">Apellido:</label>
-                            <input type="text" id="Apellido" name="Apellido" class="form-control form-control-custom" />
+                    </div>
+
+                    @if (simulacion is not null)
+                    {
+                        <partial name="_DesglosePrecio" model="simulacion" />
+
+                        <div class="form-container paso-pasajero mt-2">
+                            <h2><span class="paso-numero">2</span> Datos del pasajero</h2>
+                            <input type="hidden" name="PreciosVistos" value="true" />
+                            <div class="form-group">
+                                <label for="Nombre">Nombre:</label>
+                                <input type="text" id="Nombre" name="Nombre" value="@ViewBag.Nombre" class="form-control form-control-custom" />
+                            </div>
+                            <div class="form-group">
+                                <label for="Apellido">Apellido:</label>
+                                <input type="text" id="Apellido" name="Apellido" value="@ViewBag.Apellido" class="form-control form-control-custom" />
+                            </div>
+                            <div class="form-group">
+                                <label for="Dni">DNI:</label>
+                                <input type="text" id="Dni" name="Dni" value="@ViewBag.Dni" class="form-control form-control-custom" />
+                            </div>
+                            <div class="form-group">
+                                <label for="Email">Email:</label>
+                                <input type="text" id="Email" name="Email" value="@ViewBag.Email" class="form-control form-control-custom" />
+                            </div>
+                            <div>
+                                <button type="submit" formaction="@Url.Action("AgregarPasaje")" class="btn-submit">
+                                    <i class="fa-solid fa-ticket me-2"></i>Emitir pasaje
+                                </button>
+                            </div>
                         </div>
-                        <div class="form-group">
-                            <label for="Dni">DNI:</label>
-                            <input type="text" id="Dni" name="Dni" class="form-control form-control-custom" />
-                        </div>
-                        <div class="form-group">
-                            <label for="Email">Email:</label>
-                            <input type="text" id="Email" name="Email" class="form-control form-control-custom" />
-                        </div>
-                        <div>
-                            <button type="submit" class="btn-submit">Agregar</button>
-                        </div>
-                    </form>
-                </div>
+                    }
+                </form>
             </div>
         </div>
     </div>

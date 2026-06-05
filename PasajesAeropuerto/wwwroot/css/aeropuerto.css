@@ -137,6 +137,20 @@ body.aeropuerto-page {
     margin-bottom: 1.25rem;
 }
 
+.form-container h2 .paso-numero {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.75rem;
+    height: 1.75rem;
+    background: var(--primary-color);
+    color: #fff;
+    border-radius: 50%;
+    font-size: 0.9rem;
+    margin-right: 0.5rem;
+    vertical-align: middle;
+}
+
 .form-container .form-group {
     margin-bottom: 1rem;
 }
@@ -164,6 +178,212 @@ body.aeropuerto-page {
     color: white;
 }
 
+.precio-pasaje-card {
+    border-radius: 16px;
+    overflow: hidden;
+    border: 1px solid rgba(0, 51, 102, 0.12);
+    box-shadow: 0 8px 24px rgba(0, 51, 102, 0.08);
+    background: #fff;
+}
+
+.precio-pasaje-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.25rem 1.5rem;
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+    color: #fff;
+}
+
+.precio-pasaje-header-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    flex-shrink: 0;
+}
+
+.precio-pasaje-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+}
+
+.precio-pasaje-subtitle {
+    font-size: 0.8rem;
+    opacity: 0.85;
+}
+
+.precio-pasaje-body {
+    padding: 1.5rem;
+}
+
+.precio-meta-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.75rem;
+    margin-bottom: 1.25rem;
+}
+
+.precio-meta-item {
+    background: var(--light-bg);
+    border-radius: 10px;
+    padding: 0.75rem 1rem;
+    border: 1px solid #e9ecef;
+}
+
+.precio-meta-label {
+    display: block;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #6c757d;
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+}
+
+.precio-meta-value {
+    display: block;
+    font-weight: 600;
+    color: var(--primary-color);
+    font-size: 0.95rem;
+}
+
+.precio-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 1.25rem;
+}
+
+.precio-badge {
+    font-size: 0.8rem;
+    font-weight: 600;
+    padding: 0.35rem 0.75rem;
+    border-radius: 20px;
+}
+
+.precio-badge-alta {
+    background: #fff3cd;
+    color: #664d03;
+}
+
+.precio-badge-weekend {
+    background: #cff4fc;
+    color: #055160;
+}
+
+.precio-lineas {
+    border-top: 1px solid #e9ecef;
+    padding-top: 0.5rem;
+}
+
+.precio-linea {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.65rem 0;
+    border-bottom: 1px dashed #eef1f3;
+}
+
+.precio-linea:last-child {
+    border-bottom: none;
+}
+
+.precio-linea-concepto {
+    font-size: 0.9rem;
+    color: var(--text-dark);
+}
+
+.precio-linea-icon {
+    color: var(--secondary-color);
+    width: 1.1rem;
+    text-align: center;
+    margin-right: 0.35rem;
+}
+
+.precio-linea-monto {
+    font-weight: 600;
+    white-space: nowrap;
+    color: var(--text-dark);
+}
+
+.precio-linea-monto-plus {
+    color: var(--accent-color);
+}
+
+.precio-linea-extra .precio-linea-concepto {
+    padding-left: 0.5rem;
+    border-left: 3px solid var(--accent-color);
+}
+
+.precio-linea-subtotal {
+    margin-top: 0.5rem;
+    padding-top: 0.85rem;
+    border-top: 2px solid #e9ecef;
+    border-bottom: none;
+}
+
+.precio-linea-subtotal .precio-linea-monto {
+    color: var(--primary-color);
+    font-size: 1.05rem;
+}
+
+.precio-linea-personas {
+    padding-bottom: 0;
+}
+
+.precio-total-box {
+    margin-top: 1.25rem;
+    padding: 1.25rem 1.5rem;
+    border-radius: 12px;
+    background: linear-gradient(135deg, var(--primary-color) 0%, #004080 100%);
+    color: #fff;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+}
+
+.precio-total-label {
+    font-weight: 600;
+    font-size: 1rem;
+}
+
+.precio-total-monto {
+    font-size: 1.75rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+}
+
+.precio-nota {
+    margin: 1rem 0 0;
+    font-size: 0.8rem;
+    color: #6c757d;
+    text-align: center;
+}
+
+.form-container.paso-pasajero {
+    border-top: 3px solid var(--accent-color);
+    padding-top: 1.5rem;
+    margin-top: 0.5rem;
+}
+
+.form-container.paso-pasajero h2 .paso-numero {
+    background: var(--accent-color);
+}
+
+@media (max-width: 992px) {
+    .precio-meta-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
 @media (max-width: 768px) {
     .hero-title {
         font-size: 2.25rem;
@@ -171,5 +391,19 @@ body.aeropuerto-page {
 
     .hero-section {
         height: 480px;
+    }
+
+    .precio-meta-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .precio-total-monto {
+        font-size: 1.5rem;
+    }
+
+    .precio-linea {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.25rem;
     }
 }
