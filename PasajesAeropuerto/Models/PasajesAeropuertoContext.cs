@@ -15,7 +15,6 @@ namespace PasajesAeropuerto.Data
                   TrustServerCertificate=True");
         }
 
-        public DbSet<Avion> Aviones { get; set; }
         public DbSet<Destino> Destinos { get; set; }
         public DbSet<Origen> Origenes { get; set; }
         public DbSet<Pasajero> Pasajeros { get; set; }
@@ -27,12 +26,6 @@ namespace PasajesAeropuerto.Data
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
-
-            modelBuilder.Entity<Avion>().HasData(
-                new Avion { Id = 1, Modelo = "Boeing 737", Capacidad = 160, Matricula = "LV-CKS" },
-                new Avion { Id = 2, Modelo = "Airbus A320", Capacidad = 150, Matricula = "LV-GUR" },
-                new Avion { Id = 3, Modelo = "Embraer 190", Capacidad = 96, Matricula = "LV-CHO" }
-            );
 
             modelBuilder.Entity<Destino>().HasData(
                 new Destino { Id = 1, Nombre = "Buenos Aires", Km = 0.0, PrecioBase = 0.00m },

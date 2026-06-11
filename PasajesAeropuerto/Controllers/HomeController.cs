@@ -35,14 +35,13 @@ namespace PasajesAeropuerto.Controllers
             string? Nombre,
             string? Apellido,
             string? Dni,
-            string? Email,
-            int AvionId)
+            string? Email)
         {
             var error = await ValidarDatosViajeAsync(OrigenId, DestinoId, VueloId, CantPersonas);
             if (error is not null)
             {
                 ViewBag.Error = error;
-                await RestaurarFormularioAsync(OrigenId, DestinoId, VueloId, Clase, CantPersonas, EquipajeValija, EquipajeAdicional, Nombre, Apellido, Dni, Email, AvionId);
+                await RestaurarFormularioAsync(OrigenId, DestinoId, VueloId, Clase, CantPersonas, EquipajeValija, EquipajeAdicional, Nombre, Apellido, Dni, Email);
                 return View("Index");
             }
 
@@ -55,7 +54,7 @@ namespace PasajesAeropuerto.Controllers
                 destino!, vuelo!, clase, CantPersonas, EquipajeValija, EquipajeAdicional, tiposEquipaje);
             ViewBag.PreciosVistos = true;
 
-            await RestaurarFormularioAsync(OrigenId, DestinoId, VueloId, clase, CantPersonas, EquipajeValija, EquipajeAdicional, Nombre, Apellido, Dni, Email, AvionId);
+            await RestaurarFormularioAsync(OrigenId, DestinoId, VueloId, clase, CantPersonas, EquipajeValija, EquipajeAdicional, Nombre, Apellido, Dni, Email);
             return View("Index");
         }
 
@@ -68,14 +67,13 @@ namespace PasajesAeropuerto.Controllers
             int OrigenId,
             int DestinoId,
             int VueloId,
-            int AvionId,
             string Clase,
             int CantPersonas,
             bool EquipajeValija,
             bool EquipajeAdicional,
             bool PreciosVistos)
         {
-            await RestaurarFormularioAsync(OrigenId, DestinoId, VueloId, Clase, CantPersonas, EquipajeValija, EquipajeAdicional, Nombre, Apellido, Dni, Email, AvionId);
+            await RestaurarFormularioAsync(OrigenId, DestinoId, VueloId, Clase, CantPersonas, EquipajeValija, EquipajeAdicional, Nombre, Apellido, Dni, Email);
 
             if (!PreciosVistos)
             {
@@ -97,13 +95,6 @@ namespace PasajesAeropuerto.Controllers
             if (errorViaje is not null)
             {
                 ViewBag.Error = errorViaje;
-                return View("Index");
-            }
-
-            if (!await _context.Aviones.AnyAsync(a => a.Id == AvionId))
-            {
-                ViewBag.Error = "Avión no válido.";
-                await RecalcularYMostrarPreciosAsync(DestinoId, VueloId, Clase, CantPersonas, EquipajeValija, EquipajeAdicional);
                 return View("Index");
             }
 
@@ -218,7 +209,7 @@ namespace PasajesAeropuerto.Controllers
         private async Task RestaurarFormularioAsync(
             int origenId, int destinoId, int vueloId, string? clase, int cantPersonas,
             bool equipajeValija, bool equipajeAdicional,
-            string? nombre, string? apellido, string? dni, string? email, int avionId)
+            string? nombre, string? apellido, string? dni, string? email)
         {
             ViewBag.Clase = string.IsNullOrWhiteSpace(clase) ? "Economica" : clase;
             ViewBag.CantPersonas = cantPersonas;
@@ -231,11 +222,10 @@ namespace PasajesAeropuerto.Controllers
             await CargarListasAsync(
                 origenId > 0 ? origenId : null,
                 destinoId > 0 ? destinoId : null,
-                vueloId > 0 ? vueloId : null,
-                avionId > 0 ? avionId : null);
+                vueloId > 0 ? vueloId : null);
         }
 
-        private async Task CargarListasAsync(int? origenId = null, int? destinoId = null, int? vueloId = null, int? avionId = null)
+        private async Task CargarListasAsync(int? origenId = null, int? destinoId = null, int? vueloId = null)
         {
             ViewBag.Origenes = new SelectList(
                 await _context.Origenes.OrderBy(o => o.Nombre).ToListAsync(),
@@ -259,13 +249,6 @@ namespace PasajesAeropuerto.Controllers
                 "Id",
                 "Nombre",
                 destinoId);
-
-            var aviones = await _context.Aviones
-                .OrderBy(a => a.Modelo)
-                .Select(a => new { a.Id, Texto = a.Modelo + " (" + a.Matricula + ")" })
-                .ToListAsync();
-
-            ViewBag.Aviones = new SelectList(aviones, "Id", "Texto", avionId);
 
             ViewBag.TiposEquipaje = await _context.TiposEquipaje.OrderBy(t => t.Id).ToListAsync();
         }

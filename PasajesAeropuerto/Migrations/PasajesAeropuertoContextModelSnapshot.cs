@@ -22,55 +22,6 @@ namespace PasajesAeropuerto.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("PasajesAeropuerto.Entities.Avion", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("Capacidad")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Matricula")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
-
-                    b.Property<string>("Modelo")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Aviones");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            Capacidad = 160,
-                            Matricula = "LV-CKS",
-                            Modelo = "Boeing 737"
-                        },
-                        new
-                        {
-                            Id = 2,
-                            Capacidad = 150,
-                            Matricula = "LV-GUR",
-                            Modelo = "Airbus A320"
-                        },
-                        new
-                        {
-                            Id = 3,
-                            Capacidad = 96,
-                            Matricula = "LV-CHO",
-                            Modelo = "Embraer 190"
-                        });
-                });
-
             modelBuilder.Entity("PasajesAeropuerto.Entities.Destino", b =>
                 {
                     b.Property<int>("Id")
