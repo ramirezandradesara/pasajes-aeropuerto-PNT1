@@ -25,6 +25,7 @@ namespace PasajesAeropuerto.Controllers
 
         [HttpPost]
         public async Task<IActionResult> VerPrecios(
+            int OrigenId,
             int DestinoId,
             int VueloId,
             string Clase,
@@ -37,11 +38,11 @@ namespace PasajesAeropuerto.Controllers
             string? Email,
             int AvionId)
         {
-            var error = await ValidarDatosViajeAsync(DestinoId, VueloId, CantPersonas);
+            var error = await ValidarDatosViajeAsync(OrigenId, DestinoId, VueloId, CantPersonas);
             if (error is not null)
             {
                 ViewBag.Error = error;
-                await RestaurarFormularioAsync(DestinoId, VueloId, Clase, CantPersonas, EquipajeValija, EquipajeAdicional, Nombre, Apellido, Dni, Email, AvionId);
+                await RestaurarFormularioAsync(OrigenId, DestinoId, VueloId, Clase, CantPersonas, EquipajeValija, EquipajeAdicional, Nombre, Apellido, Dni, Email, AvionId);
                 return View("Index");
             }
 
@@ -54,7 +55,7 @@ namespace PasajesAeropuerto.Controllers
                 destino!, vuelo!, clase, CantPersonas, EquipajeValija, EquipajeAdicional, tiposEquipaje);
             ViewBag.PreciosVistos = true;
 
-            await RestaurarFormularioAsync(DestinoId, VueloId, clase, CantPersonas, EquipajeValija, EquipajeAdicional, Nombre, Apellido, Dni, Email, AvionId);
+            await RestaurarFormularioAsync(OrigenId, DestinoId, VueloId, clase, CantPersonas, EquipajeValija, EquipajeAdicional, Nombre, Apellido, Dni, Email, AvionId);
             return View("Index");
         }
 
@@ -64,6 +65,7 @@ namespace PasajesAeropuerto.Controllers
             string Apellido,
             string Dni,
             string Email,
+            int OrigenId,
             int DestinoId,
             int VueloId,
             int AvionId,
@@ -73,7 +75,7 @@ namespace PasajesAeropuerto.Controllers
             bool EquipajeAdicional,
             bool PreciosVistos)
         {
-            await RestaurarFormularioAsync(DestinoId, VueloId, Clase, CantPersonas, EquipajeValija, EquipajeAdicional, Nombre, Apellido, Dni, Email, AvionId);
+            await RestaurarFormularioAsync(OrigenId, DestinoId, VueloId, Clase, CantPersonas, EquipajeValija, EquipajeAdicional, Nombre, Apellido, Dni, Email, AvionId);
 
             if (!PreciosVistos)
             {
@@ -91,7 +93,7 @@ namespace PasajesAeropuerto.Controllers
                 return View("Index");
             }
 
-            var errorViaje = await ValidarDatosViajeAsync(DestinoId, VueloId, CantPersonas);
+            var errorViaje = await ValidarDatosViajeAsync(OrigenId, DestinoId, VueloId, CantPersonas);
             if (errorViaje is not null)
             {
                 ViewBag.Error = errorViaje;
@@ -145,6 +147,11 @@ namespace PasajesAeropuerto.Controllers
 
             var reserva = new Reserva
             {
+                OrigenId = OrigenId,
+                DestinoId = DestinoId,
+                VueloId = VueloId,
+                Pasajero = pasajero,
+                Clase = clase,
                 CantPersonas = CantPersonas,
                 FechaEmision = DateTime.Now,
                 TotalCalculado = simulacion.Total
@@ -158,16 +165,21 @@ namespace PasajesAeropuerto.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        private async Task<string?> ValidarDatosViajeAsync(int destinoId, int vueloId, int cantPersonas)
+        private async Task<string?> ValidarDatosViajeAsync(int origenId, int destinoId, int vueloId, int cantPersonas)
         {
-            if (destinoId <= 0 || vueloId <= 0)
+            if (origenId <= 0 || destinoId <= 0 || vueloId <= 0)
             {
-                return "Seleccioná destino y vuelo.";
+                return "Seleccioná origen, destino y vuelo.";
             }
 
             if (cantPersonas < 1 || cantPersonas > 10)
             {
                 return "La cantidad de personas debe ser entre 1 y 10.";
+            }
+
+            if (!await _context.Origenes.AnyAsync(o => o.Id == origenId))
+            {
+                return "Origen no válido.";
             }
 
             if (!await _context.Destinos.AnyAsync(d => d.Id == destinoId))
@@ -204,7 +216,7 @@ namespace PasajesAeropuerto.Controllers
         }
 
         private async Task RestaurarFormularioAsync(
-            int destinoId, int vueloId, string? clase, int cantPersonas,
+            int origenId, int destinoId, int vueloId, string? clase, int cantPersonas,
             bool equipajeValija, bool equipajeAdicional,
             string? nombre, string? apellido, string? dni, string? email, int avionId)
         {
@@ -217,13 +229,20 @@ namespace PasajesAeropuerto.Controllers
             ViewBag.Dni = dni ?? "";
             ViewBag.Email = email ?? "";
             await CargarListasAsync(
+                origenId > 0 ? origenId : null,
                 destinoId > 0 ? destinoId : null,
                 vueloId > 0 ? vueloId : null,
                 avionId > 0 ? avionId : null);
         }
 
-        private async Task CargarListasAsync(int? destinoId = null, int? vueloId = null, int? avionId = null)
+        private async Task CargarListasAsync(int? origenId = null, int? destinoId = null, int? vueloId = null, int? avionId = null)
         {
+            ViewBag.Origenes = new SelectList(
+                await _context.Origenes.OrderBy(o => o.Nombre).ToListAsync(),
+                "Id",
+                "Nombre",
+                origenId);
+
             var vuelos = await _context.Vuelos
                 .OrderBy(v => v.FechaSalida)
                 .Select(v => new

@@ -24,5 +24,7 @@ namespace PasajesAeropuerto.Entities
         public string Email { get; set; } = string.Empty;
 
         public ICollection<Equipaje> Equipajes { get; set; } = new List<Equipaje>();
+
+        public ICollection<Reserva> Reservas { get; set; } = new List<Reserva>();
     }
 }

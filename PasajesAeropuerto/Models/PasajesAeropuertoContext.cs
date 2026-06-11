@@ -17,6 +17,7 @@ namespace PasajesAeropuerto.Data
 
         public DbSet<Avion> Aviones { get; set; }
         public DbSet<Destino> Destinos { get; set; }
+        public DbSet<Origen> Origenes { get; set; }
         public DbSet<Pasajero> Pasajeros { get; set; }
         public DbSet<Reserva> Reservas { get; set; }
         public DbSet<Vuelo> Vuelos { get; set; }
@@ -39,6 +40,35 @@ namespace PasajesAeropuerto.Data
                 new Destino { Id = 3, Nombre = "Mendoza", Km = 1050.2, PrecioBase = 32000.00m },
                 new Destino { Id = 4, Nombre = "Córdoba", Km = 700.0, PrecioBase = 22000.00m }
             );
+
+            modelBuilder.Entity<Origen>().HasData(
+                new Origen { Id = 1, Nombre = "Buenos Aires" },
+                new Origen { Id = 2, Nombre = "Córdoba" },
+                new Origen { Id = 3, Nombre = "Mendoza" }
+            );
+
+            modelBuilder.Entity<Reserva>(entity =>
+            {
+                entity.HasOne(r => r.Origen)
+                    .WithMany()
+                    .HasForeignKey(r => r.OrigenId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(r => r.Destino)
+                    .WithMany()
+                    .HasForeignKey(r => r.DestinoId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(r => r.Vuelo)
+                    .WithMany()
+                    .HasForeignKey(r => r.VueloId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(r => r.Pasajero)
+                    .WithMany(p => p.Reservas)
+                    .HasForeignKey(r => r.PasajeroId)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
 
             modelBuilder.Entity<TipoEquipaje>().HasData(
                 new TipoEquipaje { Id = 1, Nombre = "Equipaje de mano", Recargo = 0.00m },

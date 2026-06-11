@@ -154,6 +154,41 @@ namespace PasajesAeropuerto.Migrations
                         });
                 });
 
+            modelBuilder.Entity("PasajesAeropuerto.Entities.Origen", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Nombre")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Origenes");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Nombre = "Buenos Aires"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Nombre = "Córdoba"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Nombre = "Mendoza"
+                        });
+                });
+
             modelBuilder.Entity("PasajesAeropuerto.Entities.Pasajero", b =>
                 {
                     b.Property<int>("Id")
@@ -198,13 +233,38 @@ namespace PasajesAeropuerto.Migrations
                     b.Property<int>("CantPersonas")
                         .HasColumnType("int");
 
+                    b.Property<string>("Clase")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<int>("DestinoId")
+                        .HasColumnType("int");
+
                     b.Property<DateTime>("FechaEmision")
                         .HasColumnType("datetime2");
+
+                    b.Property<int>("OrigenId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("PasajeroId")
+                        .HasColumnType("int");
 
                     b.Property<decimal>("TotalCalculado")
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<int>("VueloId")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("DestinoId");
+
+                    b.HasIndex("OrigenId");
+
+                    b.HasIndex("PasajeroId");
+
+                    b.HasIndex("VueloId");
 
                     b.ToTable("Reservas");
                 });
@@ -336,9 +396,46 @@ namespace PasajesAeropuerto.Migrations
                     b.Navigation("TipoEquipaje");
                 });
 
+            modelBuilder.Entity("PasajesAeropuerto.Entities.Reserva", b =>
+                {
+                    b.HasOne("PasajesAeropuerto.Entities.Destino", "Destino")
+                        .WithMany()
+                        .HasForeignKey("DestinoId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("PasajesAeropuerto.Entities.Origen", "Origen")
+                        .WithMany()
+                        .HasForeignKey("OrigenId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("PasajesAeropuerto.Entities.Pasajero", "Pasajero")
+                        .WithMany("Reservas")
+                        .HasForeignKey("PasajeroId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("PasajesAeropuerto.Entities.Vuelo", "Vuelo")
+                        .WithMany()
+                        .HasForeignKey("VueloId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Destino");
+
+                    b.Navigation("Origen");
+
+                    b.Navigation("Pasajero");
+
+                    b.Navigation("Vuelo");
+                });
+
             modelBuilder.Entity("PasajesAeropuerto.Entities.Pasajero", b =>
                 {
                     b.Navigation("Equipajes");
+
+                    b.Navigation("Reservas");
                 });
 
             modelBuilder.Entity("PasajesAeropuerto.Entities.TipoEquipaje", b =>
