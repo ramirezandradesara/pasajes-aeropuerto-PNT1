@@ -9,6 +9,10 @@
     var cantPersonas = (int)(ViewBag.CantPersonas ?? 1);
     var pasajeros = ViewBag.Pasajeros as List<PasajeroFormModel> ?? new List<PasajeroFormModel>();
     var tiposEquipaje = ViewBag.TiposEquipaje as List<TipoEquipaje> ?? new List<TipoEquipaje>();
+    var origenesLista = ViewBag.OrigenesLista as List<Origen> ?? new List<Origen>();
+    var destinosLista = ViewBag.DestinosLista as List<Destino> ?? new List<Destino>();
+    var origenSeleccionado = ViewBag.OrigenIdSeleccionado as int?;
+    var destinoSeleccionado = ViewBag.DestinoIdSeleccionado as int?;
 }
 
 <header class="hero-section">
@@ -43,14 +47,36 @@
                         <h2><span class="paso-numero">1</span> Datos del viaje</h2>
                         <div class="form-group">
                             <label for="OrigenId">Origen:</label>
-                            <select id="OrigenId" name="OrigenId" asp-items="ViewBag.Origenes" class="form-control form-control-custom">
+                            <select id="OrigenId" name="OrigenId" class="form-control form-control-custom">
                                 <option value="">Seleccionar origen...</option>
+                                @foreach (var origen in origenesLista)
+                                {
+                                    if (origenSeleccionado == origen.Id)
+                                    {
+                                        <option value="@origen.Id" data-ciudad="@origen.Nombre" selected>@origen.Nombre</option>
+                                    }
+                                    else
+                                    {
+                                        <option value="@origen.Id" data-ciudad="@origen.Nombre">@origen.Nombre</option>
+                                    }
+                                }
                             </select>
                         </div>
                         <div class="form-group">
                             <label for="DestinoId">Destino:</label>
-                            <select id="DestinoId" name="DestinoId" asp-items="ViewBag.Destinos" class="form-control form-control-custom">
+                            <select id="DestinoId" name="DestinoId" class="form-control form-control-custom">
                                 <option value="">Seleccionar destino...</option>
+                                @foreach (var destino in destinosLista)
+                                {
+                                    if (destinoSeleccionado == destino.Id)
+                                    {
+                                        <option value="@destino.Id" data-ciudad="@destino.Nombre" selected>@destino.Nombre</option>
+                                    }
+                                    else
+                                    {
+                                        <option value="@destino.Id" data-ciudad="@destino.Nombre">@destino.Nombre</option>
+                                    }
+                                }
                             </select>
                         </div>
                         <div class="form-group">
@@ -131,12 +157,70 @@
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             var navbar = document.querySelector('.navbar');
-            if (!navbar) return;
-            window.addEventListener('scroll', function () {
-                navbar.style.boxShadow = window.scrollY > 50
-                    ? '0 4px 20px rgba(0,0,0,0.1)'
-                    : '0 2px 15px rgba(0,0,0,0.05)';
+            if (navbar) {
+                window.addEventListener('scroll', function () {
+                    navbar.style.boxShadow = window.scrollY > 50
+                        ? '0 4px 20px rgba(0,0,0,0.1)'
+                        : '0 2px 15px rgba(0,0,0,0.05)';
+                });
+            }
+
+            var origenSelect = document.getElementById('OrigenId');
+            var destinoSelect = document.getElementById('DestinoId');
+            if (!origenSelect || !destinoSelect) return;
+
+            function normalizarCiudad(texto) {
+                return (texto || '').trim().toLocaleLowerCase();
+            }
+
+            function ciudadSeleccionada(select) {
+                var option = select.options[select.selectedIndex];
+                if (!option || !option.value) return '';
+                return normalizarCiudad(option.dataset.ciudad || option.textContent);
+            }
+
+            function actualizarFiltroOrigenDestino(origenCambio) {
+                var ciudadOrigen = ciudadSeleccionada(origenSelect);
+                var ciudadDestino = ciudadSeleccionada(destinoSelect);
+
+                Array.from(destinoSelect.options).forEach(function (option) {
+                    if (!option.value) return;
+                    var ocultar = ciudadOrigen && normalizarCiudad(option.dataset.ciudad) === ciudadOrigen;
+                    option.hidden = ocultar;
+                    option.disabled = ocultar;
+                });
+
+                Array.from(origenSelect.options).forEach(function (option) {
+                    if (!option.value) return;
+                    var ocultar = ciudadDestino && normalizarCiudad(option.dataset.ciudad) === ciudadDestino;
+                    option.hidden = ocultar;
+                    option.disabled = ocultar;
+                });
+
+                if (origenCambio && ciudadOrigen && ciudadOrigen === ciudadDestino) {
+                    destinoSelect.value = '';
+                } else if (!origenCambio && ciudadDestino && ciudadOrigen === ciudadDestino) {
+                    origenSelect.value = '';
+                }
+
+                var destinoOption = destinoSelect.options[destinoSelect.selectedIndex];
+                if (destinoOption && destinoOption.disabled) {
+                    destinoSelect.value = '';
+                }
+
+                var origenOption = origenSelect.options[origenSelect.selectedIndex];
+                if (origenOption && origenOption.disabled) {
+                    origenSelect.value = '';
+                }
+            }
+
+            origenSelect.addEventListener('change', function () {
+                actualizarFiltroOrigenDestino(true);
             });
+            destinoSelect.addEventListener('change', function () {
+                actualizarFiltroOrigenDestino(false);
+            });
+            actualizarFiltroOrigenDestino(true);
         });
     </script>
 }

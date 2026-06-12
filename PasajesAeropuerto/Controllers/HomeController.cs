@@ -271,11 +271,15 @@ namespace PasajesAeropuerto.Controllers
 
         private async Task CargarListasAsync(int? origenId = null, int? destinoId = null, int? vueloId = null)
         {
-            ViewBag.Origenes = new SelectList(
-                await _context.Origenes.OrderBy(o => o.Nombre).ToListAsync(),
-                "Id",
-                "Nombre",
-                origenId);
+            var origenes = await _context.Origenes.OrderBy(o => o.Nombre).ToListAsync();
+            ViewBag.OrigenesLista = origenes;
+            ViewBag.OrigenIdSeleccionado = origenId;
+            ViewBag.Origenes = new SelectList(origenes, "Id", "Nombre", origenId);
+
+            var destinos = await _context.Destinos.OrderBy(d => d.Nombre).ToListAsync();
+            ViewBag.DestinosLista = destinos;
+            ViewBag.DestinoIdSeleccionado = destinoId;
+            ViewBag.Destinos = new SelectList(destinos, "Id", "Nombre", destinoId);
 
             var vuelos = await _context.Vuelos
                 .OrderBy(v => v.FechaSalida)
@@ -287,12 +291,6 @@ namespace PasajesAeropuerto.Controllers
                 .ToListAsync();
 
             ViewBag.Vuelos = new SelectList(vuelos, "Id", "Texto", vueloId);
-
-            ViewBag.Destinos = new SelectList(
-                await _context.Destinos.OrderBy(d => d.Nombre).ToListAsync(),
-                "Id",
-                "Nombre",
-                destinoId);
 
             ViewBag.TiposEquipaje = await _context.TiposEquipaje.OrderBy(t => t.Id).ToListAsync();
         }
