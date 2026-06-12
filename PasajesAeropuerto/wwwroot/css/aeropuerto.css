@@ -11,6 +11,14 @@ body.aeropuerto-page {
     color: var(--text-dark);
     background-color: var(--light-bg);
     margin-bottom: 0;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.aeropuerto-main {
+    flex: 1 0 auto;
+    width: 100%;
 }
 
 .aeropuerto-page .navbar {
@@ -18,6 +26,7 @@ body.aeropuerto-page {
     backdrop-filter: blur(10px);
     box-shadow: 0 2px 15px rgba(0, 0, 0, 0.05);
     padding: 15px 0;
+    z-index: 1030;
 }
 
 .aeropuerto-page .navbar-brand {
@@ -78,7 +87,11 @@ body.aeropuerto-page {
     box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
     margin-top: -80px;
     position: relative;
-    z-index: 10;
+    z-index: 2;
+}
+
+.search-widget.reservas-empty {
+    margin-top: 0;
 }
 
 .search-widget .nav-tabs .nav-link {
@@ -117,6 +130,7 @@ body.aeropuerto-page {
 .flatpickr-calendar {
     border-radius: 12px;
     box-shadow: 0 12px 28px rgba(0, 51, 102, 0.15);
+    z-index: 1050;
 }
 
 .flatpickr-day.selected,
@@ -149,10 +163,14 @@ body.aeropuerto-page {
 }
 
 .aeropuerto-page .footer {
+    position: static;
     background-color: var(--primary-color);
     color: rgba(255, 255, 255, 0.7);
     padding: 40px 0 20px;
-    margin-top: 3rem;
+    margin-top: auto;
+    line-height: normal;
+    white-space: normal;
+    z-index: 1;
 }
 
 .form-container h2 {
@@ -435,7 +453,7 @@ body.aeropuerto-page {
 .page-header-section {
     background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
     color: #fff;
-    padding: 3rem 0 2rem;
+    padding: calc(3rem + 72px) 0 2rem;
     margin-bottom: 2rem;
 }
 

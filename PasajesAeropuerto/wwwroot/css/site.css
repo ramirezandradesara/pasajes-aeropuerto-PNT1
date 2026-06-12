@@ -18,5 +18,12 @@ html {
 }
 
 body {
-  margin-bottom: 60px;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 0;
+}
+
+.site-main {
+  flex: 1 0 auto;
 }

@@ -14,7 +14,7 @@
     <link rel="stylesheet" href="~/PasajesAeropuerto.styles.css" asp-append-version="true" />
     @await RenderSectionAsync("Styles", required: false)
 </head>
-<body class="@(ViewData["FullWidth"] as bool? == true ? "aeropuerto-page" : "")">
+<body class="@(ViewData["FullWidth"] as bool? == true ? "aeropuerto-page" : "site-page")">
     <nav class="navbar navbar-expand-lg @(ViewData["FullWidth"] as bool? == true ? "fixed-top" : "navbar-light bg-white border-bottom box-shadow mb-3")">
         <div class="container">
             <a class="navbar-brand" asp-controller="Home" asp-action="Index">
@@ -39,7 +39,9 @@
 
     @if (ViewData["FullWidth"] as bool? == true)
     {
-        @RenderBody()
+        <main class="aeropuerto-main">
+            @RenderBody()
+        </main>
         <footer class="footer">
             <div class="container text-center small">
                 &copy; 2026 - PasajesAeropuerto
@@ -48,11 +50,9 @@
     }
     else
     {
-        <div class="container">
-            <main role="main" class="pb-3">
-                @RenderBody()
-            </main>
-        </div>
+        <main class="site-main container pb-3" role="main">
+            @RenderBody()
+        </main>
         <footer class="border-top footer text-muted">
             <div class="container">
                 &copy; 2026 - PasajesAeropuerto
