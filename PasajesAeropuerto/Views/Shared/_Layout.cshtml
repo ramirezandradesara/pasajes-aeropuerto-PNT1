@@ -12,6 +12,7 @@
     <link rel="stylesheet" href="~/css/aeropuerto.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/PasajesAeropuerto.styles.css" asp-append-version="true" />
+    @await RenderSectionAsync("Styles", required: false)
 </head>
 <body class="@(ViewData["FullWidth"] as bool? == true ? "aeropuerto-page" : "")">
     <nav class="navbar navbar-expand-lg @(ViewData["FullWidth"] as bool? == true ? "fixed-top" : "navbar-light bg-white border-bottom box-shadow mb-3")">

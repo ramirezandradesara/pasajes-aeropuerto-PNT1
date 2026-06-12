@@ -76,13 +76,23 @@ namespace PasajesAeropuerto.Controllers
             int VueloId,
             string Clase,
             int CantPersonas,
+            DateTime? FechaDesde,
+            DateTime? FechaHasta,
             List<PasajeroFormModel>? Pasajeros)
         {
-            var error = await ValidarDatosViajeAsync(OrigenId, DestinoId, VueloId, CantPersonas);
+            var errorFechas = ValidarFechasViaje(FechaDesde, FechaHasta);
+            if (errorFechas is not null)
+            {
+                ViewBag.Error = errorFechas;
+                await RestaurarFormularioAsync(OrigenId, DestinoId, VueloId, Clase, CantPersonas, FechaDesde, FechaHasta, Pasajeros);
+                return View("Index");
+            }
+
+            var error = await ValidarDatosViajeAsync(OrigenId, DestinoId, VueloId, CantPersonas, FechaDesde, FechaHasta);
             if (error is not null)
             {
                 ViewBag.Error = error;
-                await RestaurarFormularioAsync(OrigenId, DestinoId, VueloId, Clase, CantPersonas, Pasajeros);
+                await RestaurarFormularioAsync(OrigenId, DestinoId, VueloId, Clase, CantPersonas, FechaDesde, FechaHasta, Pasajeros);
                 return View("Index");
             }
 
@@ -95,7 +105,7 @@ namespace PasajesAeropuerto.Controllers
                 destino!, vuelo!, clase, CantPersonas, false, false, tiposEquipaje);
             ViewBag.PreciosVistos = true;
 
-            await RestaurarFormularioAsync(OrigenId, DestinoId, VueloId, clase, CantPersonas, null);
+            await RestaurarFormularioAsync(OrigenId, DestinoId, VueloId, clase, CantPersonas, FechaDesde, FechaHasta, null);
             return View("Index");
         }
 
@@ -106,15 +116,25 @@ namespace PasajesAeropuerto.Controllers
             int VueloId,
             string Clase,
             int CantPersonas,
+            DateTime? FechaDesde,
+            DateTime? FechaHasta,
             List<PasajeroFormModel>? Pasajeros,
             bool PreciosVistos)
         {
             var pasajeros = NormalizarPasajeros(Pasajeros, CantPersonas);
-            await RestaurarFormularioAsync(OrigenId, DestinoId, VueloId, Clase, CantPersonas, pasajeros);
+            await RestaurarFormularioAsync(OrigenId, DestinoId, VueloId, Clase, CantPersonas, FechaDesde, FechaHasta, pasajeros);
 
             if (!PreciosVistos)
             {
                 ViewBag.Error = "Primero debés hacer clic en «Ver precios».";
+                return View("Index");
+            }
+
+            var errorFechas = ValidarFechasViaje(FechaDesde, FechaHasta);
+            if (errorFechas is not null)
+            {
+                ViewBag.Error = errorFechas;
+                await RecalcularYMostrarPreciosAsync(DestinoId, VueloId, Clase, CantPersonas);
                 return View("Index");
             }
 
@@ -126,7 +146,7 @@ namespace PasajesAeropuerto.Controllers
                 return View("Index");
             }
 
-            var errorViaje = await ValidarDatosViajeAsync(OrigenId, DestinoId, VueloId, CantPersonas);
+            var errorViaje = await ValidarDatosViajeAsync(OrigenId, DestinoId, VueloId, CantPersonas, FechaDesde, FechaHasta);
             if (errorViaje is not null)
             {
                 ViewBag.Error = errorViaje;
@@ -248,11 +268,33 @@ namespace PasajesAeropuerto.Controllers
             }
         }
 
-        private async Task<string?> ValidarDatosViajeAsync(int origenId, int destinoId, int vueloId, int cantPersonas)
+        private static string? ValidarFechasViaje(DateTime? fechaDesde, DateTime? fechaHasta)
+        {
+            if (fechaDesde.HasValue && fechaHasta.HasValue &&
+                fechaDesde.Value.Date > fechaHasta.Value.Date)
+            {
+                return "La fecha «Desde» no puede ser posterior a «Hasta».";
+            }
+
+            return null;
+        }
+
+        private async Task<string?> ValidarDatosViajeAsync(
+            int origenId,
+            int destinoId,
+            int vueloId,
+            int cantPersonas,
+            DateTime? fechaDesde,
+            DateTime? fechaHasta)
         {
             if (origenId <= 0 || destinoId <= 0 || vueloId <= 0)
             {
                 return "Seleccioná origen, destino y vuelo.";
+            }
+
+            if (!fechaDesde.HasValue || !fechaHasta.HasValue)
+            {
+                return "Seleccioná el rango de fechas del viaje.";
             }
 
             if (cantPersonas < 1 || cantPersonas > 10)
@@ -273,6 +315,22 @@ namespace PasajesAeropuerto.Controllers
             if (!await _context.Vuelos.AnyAsync(v => v.Id == vueloId))
             {
                 return "Vuelo no válido.";
+            }
+
+            var fechaSalida = await _context.Vuelos.AsNoTracking()
+                .Where(v => v.Id == vueloId)
+                .Select(v => (DateTime?)v.FechaSalida)
+                .FirstOrDefaultAsync();
+
+            if (fechaSalida is null)
+            {
+                return "Vuelo no válido.";
+            }
+
+            var fechaVuelo = fechaSalida.Value.Date;
+            if (fechaVuelo < fechaDesde.Value.Date || fechaVuelo > fechaHasta.Value.Date)
+            {
+                return "El vuelo seleccionado no está disponible en el rango de fechas elegido.";
             }
 
             return null;
@@ -303,18 +361,29 @@ namespace PasajesAeropuerto.Controllers
             int vueloId,
             string? clase,
             int cantPersonas,
+            DateTime? fechaDesde,
+            DateTime? fechaHasta,
             List<PasajeroFormModel>? pasajeros)
         {
             ViewBag.Clase = string.IsNullOrWhiteSpace(clase) ? "Economica" : clase;
             ViewBag.CantPersonas = cantPersonas;
+            ViewBag.FechaDesde = fechaDesde?.ToString("yyyy-MM-dd");
+            ViewBag.FechaHasta = fechaHasta?.ToString("yyyy-MM-dd");
             ViewBag.Pasajeros = NormalizarPasajeros(pasajeros, cantPersonas);
             await CargarListasAsync(
                 origenId > 0 ? origenId : null,
                 destinoId > 0 ? destinoId : null,
-                vueloId > 0 ? vueloId : null);
+                vueloId > 0 ? vueloId : null,
+                fechaDesde,
+                fechaHasta);
         }
 
-        private async Task CargarListasAsync(int? origenId = null, int? destinoId = null, int? vueloId = null)
+        private async Task CargarListasAsync(
+            int? origenId = null,
+            int? destinoId = null,
+            int? vueloId = null,
+            DateTime? fechaDesde = null,
+            DateTime? fechaHasta = null)
         {
             var origenes = await _context.Origenes.OrderBy(o => o.Nombre).ToListAsync();
             ViewBag.OrigenesLista = origenes;
@@ -326,16 +395,37 @@ namespace PasajesAeropuerto.Controllers
             ViewBag.DestinoIdSeleccionado = destinoId;
             ViewBag.Destinos = new SelectList(destinos, "Id", "Nombre", destinoId);
 
-            var vuelos = await _context.Vuelos
+            var vuelosTodos = await _context.Vuelos
                 .OrderBy(v => v.FechaSalida)
-                .Select(v => new
+                .ThenBy(v => v.HoraSalida)
+                .ToListAsync();
+
+            ViewBag.VuelosTodosLista = vuelosTodos;
+
+            var vuelos = vuelosTodos.AsEnumerable();
+            if (fechaDesde.HasValue)
+            {
+                vuelos = vuelos.Where(v => v.FechaSalida.Date >= fechaDesde.Value.Date);
+            }
+
+            if (fechaHasta.HasValue)
+            {
+                vuelos = vuelos.Where(v => v.FechaSalida.Date <= fechaHasta.Value.Date);
+            }
+
+            var vuelosFiltrados = vuelos.ToList();
+
+            ViewBag.VuelosLista = vuelosFiltrados;
+            ViewBag.VueloIdSeleccionado = vueloId;
+            ViewBag.Vuelos = new SelectList(
+                vuelosFiltrados.Select(v => new
                 {
                     v.Id,
                     Texto = v.Numero + " - " + v.Aerolinea + " (" + v.FechaSalida.ToString("dd/MM/yyyy") + ")"
-                })
-                .ToListAsync();
-
-            ViewBag.Vuelos = new SelectList(vuelos, "Id", "Texto", vueloId);
+                }),
+                "Id",
+                "Texto",
+                vueloId);
 
             ViewBag.TiposEquipaje = await _context.TiposEquipaje.OrderBy(t => t.Id).ToListAsync();
         }

@@ -109,6 +109,30 @@ body.aeropuerto-page {
     border-color: var(--primary-color);
 }
 
+.form-control-custom.flatpickr-input[readonly] {
+    background-color: #f8f9fa;
+    cursor: pointer;
+}
+
+.flatpickr-calendar {
+    border-radius: 12px;
+    box-shadow: 0 12px 28px rgba(0, 51, 102, 0.15);
+}
+
+.flatpickr-day.selected,
+.flatpickr-day.startRange,
+.flatpickr-day.endRange {
+    background: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+.flatpickr-day.selected:hover,
+.flatpickr-day.startRange:hover,
+.flatpickr-day.endRange:hover {
+    background: var(--secondary-color);
+    border-color: var(--secondary-color);
+}
+
 .btn-accent {
     background-color: var(--accent-color);
     color: white;

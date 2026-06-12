@@ -13,6 +13,10 @@
     var destinosLista = ViewBag.DestinosLista as List<Destino> ?? new List<Destino>();
     var origenSeleccionado = ViewBag.OrigenIdSeleccionado as int?;
     var destinoSeleccionado = ViewBag.DestinoIdSeleccionado as int?;
+    var vuelosTodosLista = ViewBag.VuelosTodosLista as List<Vuelo> ?? new List<Vuelo>();
+    var vueloSeleccionado = ViewBag.VueloIdSeleccionado as int?;
+    var fechaDesde = ViewBag.FechaDesde as string ?? "";
+    var fechaHasta = ViewBag.FechaHasta as string ?? "";
 }
 
 <header class="hero-section">
@@ -45,76 +49,121 @@
                 <form id="formPasaje" method="post">
                     <div class="form-container">
                         <h2><span class="paso-numero">1</span> Datos del viaje</h2>
-                        <div class="form-group">
-                            <label for="OrigenId">Origen:</label>
-                            <select id="OrigenId" name="OrigenId" class="form-control form-control-custom">
-                                <option value="">Seleccionar origen...</option>
-                                @foreach (var origen in origenesLista)
-                                {
-                                    if (origenSeleccionado == origen.Id)
-                                    {
-                                        <option value="@origen.Id" data-ciudad="@origen.Nombre" selected>@origen.Nombre</option>
-                                    }
-                                    else
-                                    {
-                                        <option value="@origen.Id" data-ciudad="@origen.Nombre">@origen.Nombre</option>
-                                    }
-                                }
-                            </select>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <div class="form-group mb-md-0">
+                                    <label for="OrigenId">Origen:</label>
+                                    <select id="OrigenId" name="OrigenId" class="form-control form-control-custom">
+                                        <option value="">Seleccionar origen...</option>
+                                        @foreach (var origen in origenesLista)
+                                        {
+                                            if (origenSeleccionado == origen.Id)
+                                            {
+                                                <option value="@origen.Id" data-ciudad="@origen.Nombre" selected>@origen.Nombre</option>
+                                            }
+                                            else
+                                            {
+                                                <option value="@origen.Id" data-ciudad="@origen.Nombre">@origen.Nombre</option>
+                                            }
+                                        }
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group mb-md-0">
+                                    <label for="DestinoId">Destino:</label>
+                                    <select id="DestinoId" name="DestinoId" class="form-control form-control-custom">
+                                        <option value="">Seleccionar destino...</option>
+                                        @foreach (var destino in destinosLista)
+                                        {
+                                            if (destinoSeleccionado == destino.Id)
+                                            {
+                                                <option value="@destino.Id" data-ciudad="@destino.Nombre" selected>@destino.Nombre</option>
+                                            }
+                                            else
+                                            {
+                                                <option value="@destino.Id" data-ciudad="@destino.Nombre">@destino.Nombre</option>
+                                            }
+                                        }
+                                    </select>
+                                </div>
+                            </div>
                         </div>
-                        <div class="form-group">
-                            <label for="DestinoId">Destino:</label>
-                            <select id="DestinoId" name="DestinoId" class="form-control form-control-custom">
-                                <option value="">Seleccionar destino...</option>
-                                @foreach (var destino in destinosLista)
-                                {
-                                    if (destinoSeleccionado == destino.Id)
-                                    {
-                                        <option value="@destino.Id" data-ciudad="@destino.Nombre" selected>@destino.Nombre</option>
-                                    }
-                                    else
-                                    {
-                                        <option value="@destino.Id" data-ciudad="@destino.Nombre">@destino.Nombre</option>
-                                    }
-                                }
-                            </select>
+                        <div class="row g-3 mt-1">
+                            <div class="col-md-6">
+                                <div class="form-group mb-md-0">
+                                    <label for="FechaDesde">Desde:</label>
+                                    <input type="text" id="FechaDesde" name="FechaDesde"
+                                           value="@fechaDesde" placeholder="DD/MM/YYYY"
+                                           class="form-control form-control-custom fecha-picker" autocomplete="off" />
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group mb-md-0">
+                                    <label for="FechaHasta">Hasta:</label>
+                                    <input type="text" id="FechaHasta" name="FechaHasta"
+                                           value="@fechaHasta" placeholder="DD/MM/YYYY"
+                                           class="form-control form-control-custom fecha-picker" autocomplete="off" />
+                                </div>
+                            </div>
                         </div>
-                        <div class="form-group">
-                            <label for="VueloId">Vuelo:</label>
-                            <select id="VueloId" name="VueloId" asp-items="ViewBag.Vuelos" class="form-control form-control-custom">
-                                <option value="">Seleccionar vuelo...</option>
-                            </select>
+                        <div class="row g-3 mt-1">
+                            <div class="col-md-6">
+                                <div class="form-group mb-md-0">
+                                    <label for="VueloId">Vuelo:</label>
+                                    <select id="VueloId" name="VueloId" class="form-control form-control-custom">
+                                        <option value="">Seleccioná fechas para ver vuelos...</option>
+                                        @foreach (var vuelo in vuelosTodosLista)
+                                        {
+                                            var texto = vuelo.Numero + " - " + vuelo.Aerolinea + " (" + vuelo.FechaSalida.ToString("dd/MM/yyyy") + ")";
+                                            if (vueloSeleccionado == vuelo.Id)
+                                            {
+                                                <option value="@vuelo.Id"
+                                                        data-fecha="@vuelo.FechaSalida.ToString("yyyy-MM-dd")"
+                                                        selected>@texto</option>
+                                            }
+                                            else
+                                            {
+                                                <option value="@vuelo.Id"
+                                                        data-fecha="@vuelo.FechaSalida.ToString("yyyy-MM-dd")">@texto</option>
+                                            }
+                                        }
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group mb-md-0">
+                                    <label for="Clase">Clase de asiento:</label>
+                                    <select id="Clase" name="Clase" class="form-control form-control-custom">
+                                        @if (claseSel == "Economica")
+                                        {
+                                            <option value="Economica" selected>Económica (x1.0 — 23 kg)</option>
+                                        }
+                                        else
+                                        {
+                                            <option value="Economica">Económica (x1.0 — 23 kg)</option>
+                                        }
+                                        @if (claseSel == "Business")
+                                        {
+                                            <option value="Business" selected>Business (x2.0 — 30 kg)</option>
+                                        }
+                                        else
+                                        {
+                                            <option value="Business">Business (x2.0 — 30 kg)</option>
+                                        }
+                                        @if (claseSel == "Primera")
+                                        {
+                                            <option value="Primera" selected>Primera Clase (x3.5 — 40 kg)</option>
+                                        }
+                                        else
+                                        {
+                                            <option value="Primera">Primera Clase (x3.5 — 40 kg)</option>
+                                        }
+                                    </select>
+                                </div>
+                            </div>
                         </div>
-                        <div class="form-group">
-                            <label for="Clase">Clase de asiento:</label>
-                            <select id="Clase" name="Clase" class="form-control form-control-custom">
-                                @if (claseSel == "Economica")
-                                {
-                                    <option value="Economica" selected>Económica (x1.0 — 23 kg)</option>
-                                }
-                                else
-                                {
-                                    <option value="Economica">Económica (x1.0 — 23 kg)</option>
-                                }
-                                @if (claseSel == "Business")
-                                {
-                                    <option value="Business" selected>Business (x2.0 — 30 kg)</option>
-                                }
-                                else
-                                {
-                                    <option value="Business">Business (x2.0 — 30 kg)</option>
-                                }
-                                @if (claseSel == "Primera")
-                                {
-                                    <option value="Primera" selected>Primera Clase (x3.5 — 40 kg)</option>
-                                }
-                                else
-                                {
-                                    <option value="Primera">Primera Clase (x3.5 — 40 kg)</option>
-                                }
-                            </select>
-                        </div>
-                        <div class="form-group">
+                        <div class="form-group mt-3">
                             <label for="CantPersonas">Cantidad de personas:</label>
                             <input type="number" id="CantPersonas" name="CantPersonas"
                                    value="@(ViewBag.CantPersonas ?? 1)" min="1" max="10"
@@ -153,7 +202,13 @@
     </div>
 </section>
 
+@section Styles {
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" />
+}
+
 @section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/es.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             var navbar = document.querySelector('.navbar');
@@ -167,8 +222,8 @@
 
             var origenSelect = document.getElementById('OrigenId');
             var destinoSelect = document.getElementById('DestinoId');
-            if (!origenSelect || !destinoSelect) return;
 
+            if (origenSelect && destinoSelect) {
             function normalizarCiudad(texto) {
                 return (texto || '').trim().toLocaleLowerCase();
             }
@@ -221,6 +276,68 @@
                 actualizarFiltroOrigenDestino(false);
             });
             actualizarFiltroOrigenDestino(true);
+            }
+
+            var fechaDesdeInput = document.getElementById('FechaDesde');
+            var fechaHastaInput = document.getElementById('FechaHasta');
+            var vueloSelect = document.getElementById('VueloId');
+
+            function actualizarVuelosDisponibles() {
+                if (!fechaDesdeInput || !fechaHastaInput || !vueloSelect) return;
+
+                var desde = fechaDesdeInput.value;
+                var hasta = fechaHastaInput.value;
+                var hayRango = desde && hasta;
+                var placeholder = vueloSelect.options[0];
+
+                if (desde && hasta && desde > hasta) {
+                    placeholder.textContent = '«Desde» no puede ser posterior a «Hasta»';
+                } else if (!hayRango) {
+                    placeholder.textContent = 'Seleccioná fechas para ver vuelos...';
+                } else {
+                    placeholder.textContent = 'Seleccionar vuelo...';
+                }
+
+                var visibles = 0;
+                Array.from(vueloSelect.options).forEach(function (option, index) {
+                    if (index === 0) return;
+
+                    var fechaVuelo = option.dataset.fecha;
+                    var mostrar = hayRango && desde <= hasta &&
+                        fechaVuelo >= desde && fechaVuelo <= hasta;
+
+                    option.hidden = !mostrar;
+                    option.disabled = !mostrar;
+                    if (mostrar) visibles++;
+                });
+
+                if (hayRango && desde <= hasta && visibles === 0) {
+                    placeholder.textContent = 'No hay vuelos en ese rango de fechas';
+                }
+
+                var seleccion = vueloSelect.options[vueloSelect.selectedIndex];
+                if (seleccion && (seleccion.disabled || !seleccion.value)) {
+                    vueloSelect.value = '';
+                }
+            }
+
+            if (fechaDesdeInput && fechaHastaInput && typeof flatpickr !== 'undefined') {
+                flatpickr.localize(flatpickr.l10ns.es);
+
+                var opcionesFecha = {
+                    altInput: true,
+                    altFormat: 'd/m/Y',
+                    dateFormat: 'Y-m-d',
+                    allowInput: true,
+                    disableMobile: true,
+                    altInputClass: 'form-control form-control-custom',
+                    onChange: actualizarVuelosDisponibles
+                };
+
+                flatpickr(fechaDesdeInput, opcionesFecha);
+                flatpickr(fechaHastaInput, opcionesFecha);
+                actualizarVuelosDisponibles();
+            }
         });
     </script>
 }
