@@ -24,6 +24,51 @@ namespace PasajesAeropuerto.Controllers
             return View();
         }
 
+        [HttpGet]
+        public async Task<IActionResult> MisReservas()
+        {
+            var reservas = await _context.Reservas
+                .AsNoTracking()
+                .Include(r => r.Origen)
+                .Include(r => r.Destino)
+                .Include(r => r.Vuelo)
+                .Include(r => r.Pasajeros)
+                    .ThenInclude(p => p.Equipajes)
+                    .ThenInclude(e => e.TipoEquipaje)
+                .OrderByDescending(r => r.FechaEmision)
+                .ToListAsync();
+
+            var model = reservas.Select(r => new ReservaListadoViewModel
+            {
+                Id = r.Id,
+                OrigenNombre = r.Origen.Nombre,
+                DestinoNombre = r.Destino.Nombre,
+                VueloNumero = r.Vuelo.Numero,
+                Aerolinea = r.Vuelo.Aerolinea,
+                FechaVuelo = r.Vuelo.FechaSalida,
+                HoraSalida = r.Vuelo.HoraSalida,
+                Clase = r.Clase,
+                TotalCalculado = r.TotalCalculado,
+                FechaEmision = r.FechaEmision,
+                Pasajeros = r.Pasajeros
+                    .OrderBy(p => p.Id)
+                    .Select(p => new PasajeroReservaViewModel
+                    {
+                        Nombre = p.Nombre,
+                        Apellido = p.Apellido,
+                        Dni = p.Dni,
+                        Email = p.Email,
+                        Equipajes = p.Equipajes
+                            .OrderBy(e => e.TipoEquipajeId)
+                            .Select(e => e.TipoEquipaje.Nombre)
+                            .ToList()
+                    })
+                    .ToList()
+            }).ToList();
+
+            return View(model);
+        }
+
         [HttpPost]
         public async Task<IActionResult> VerPrecios(
             int OrigenId,

@@ -1,0 +1,113 @@
+@model List<PasajesAeropuerto.Models.ReservaListadoViewModel>
+@{
+    ViewData["Title"] = "Mis reservas";
+    ViewData["FullWidth"] = true;
+
+    string EtiquetaClase(string clase) => clase switch
+    {
+        "Primera" => "Primera clase",
+        "Business" => "Business",
+        _ => "Económica"
+    };
+}
+
+<section class="page-header-section">
+    <div class="container">
+        <h1 class="page-header-title">Mis reservas</h1>
+        <p class="page-header-subtitle mb-0">Consultá el detalle de los pasajes emitidos.</p>
+    </div>
+</section>
+
+<section class="container pb-5">
+    <div class="row justify-content-center">
+        <div class="col-xl-10">
+            @if (!Model.Any())
+            {
+                <div class="search-widget reservas-empty">
+                    <div class="text-center py-4">
+                        <i class="fa-solid fa-ticket fa-3x text-muted mb-3"></i>
+                        <h2 class="h4 text-primary">Todavía no hay reservas</h2>
+                        <p class="text-muted mb-4">Cuando emitas un pasaje, va a aparecer acá con todos sus datos.</p>
+                        <a asp-action="Index" class="btn btn-accent">
+                            <i class="fa-solid fa-plane me-2"></i>Emitir un pasaje
+                        </a>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <p class="text-muted mb-0">@Model.Count reserva(s) encontrada(s)</p>
+                    <a asp-action="Index" class="btn btn-accent btn-sm">
+                        <i class="fa-solid fa-plus me-1"></i>Nueva reserva
+                    </a>
+                </div>
+
+                @foreach (var reserva in Model)
+                {
+                    <article class="reserva-card mb-4">
+                        <div class="reserva-card-header">
+                            <div>
+                                <span class="reserva-id">Reserva #@reserva.Id</span>
+                                <h2 class="reserva-ruta mb-0">
+                                    @reserva.OrigenNombre
+                                    <i class="fa-solid fa-arrow-right-long mx-2 reserva-ruta-icon"></i>
+                                    @reserva.DestinoNombre
+                                </h2>
+                            </div>
+                            <div class="reserva-total">@reserva.TotalCalculado.ToString("C")</div>
+                        </div>
+
+                        <div class="reserva-card-body">
+                            <div class="reserva-meta-grid">
+                                <div class="reserva-meta-item">
+                                    <span class="reserva-meta-label"><i class="fa-solid fa-plane me-1"></i>Vuelo</span>
+                                    <span class="reserva-meta-value">@reserva.VueloNumero — @reserva.Aerolinea</span>
+                                </div>
+                                <div class="reserva-meta-item">
+                                    <span class="reserva-meta-label"><i class="fa-regular fa-calendar me-1"></i>Fecha de vuelo</span>
+                                    <span class="reserva-meta-value">@reserva.FechaVuelo.ToString("dd/MM/yyyy") @reserva.HoraSalida.ToString(@"hh\:mm")</span>
+                                </div>
+                                <div class="reserva-meta-item">
+                                    <span class="reserva-meta-label"><i class="fa-solid fa-chair me-1"></i>Clase</span>
+                                    <span class="reserva-meta-value">@EtiquetaClase(reserva.Clase)</span>
+                                </div>
+                                <div class="reserva-meta-item">
+                                    <span class="reserva-meta-label"><i class="fa-solid fa-receipt me-1"></i>Emitida</span>
+                                    <span class="reserva-meta-value">@reserva.FechaEmision.ToString("dd/MM/yyyy HH:mm")</span>
+                                </div>
+                            </div>
+
+                            <div class="reserva-pasajeros">
+                                <h3 class="reserva-pasajeros-title">
+                                    <i class="fa-solid fa-users me-2"></i>Pasajeros (@reserva.Pasajeros.Count)
+                                </h3>
+                                <div class="row g-3">
+                                    @foreach (var pasajero in reserva.Pasajeros)
+                                    {
+                                        <div class="col-md-6">
+                                            <div class="reserva-pasajero-item">
+                                                <strong>@pasajero.Apellido, @pasajero.Nombre</strong>
+                                                <div class="text-muted small">DNI: @pasajero.Dni</div>
+                                                <div class="text-muted small">@pasajero.Email</div>
+                                                @if (pasajero.Equipajes.Any())
+                                                {
+                                                    <div class="reserva-equipaje-tags mt-2">
+                                                        @foreach (var equipaje in pasajero.Equipajes)
+                                                        {
+                                                            <span class="reserva-equipaje-tag">@equipaje</span>
+                                                        }
+                                                    </div>
+                                                }
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </article>
+                }
+            }
+        </div>
+    </div>
+</section>
