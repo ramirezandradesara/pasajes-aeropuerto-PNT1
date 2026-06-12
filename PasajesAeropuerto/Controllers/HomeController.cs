@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using PasajesAeropuerto.Data;
 using PasajesAeropuerto.Entities;
+using PasajesAeropuerto.Models;
 using PasajesAeropuerto.Services;
 
 namespace PasajesAeropuerto.Controllers
@@ -30,18 +31,13 @@ namespace PasajesAeropuerto.Controllers
             int VueloId,
             string Clase,
             int CantPersonas,
-            bool EquipajeValija,
-            bool EquipajeAdicional,
-            string? Nombre,
-            string? Apellido,
-            string? Dni,
-            string? Email)
+            List<PasajeroFormModel>? Pasajeros)
         {
             var error = await ValidarDatosViajeAsync(OrigenId, DestinoId, VueloId, CantPersonas);
             if (error is not null)
             {
                 ViewBag.Error = error;
-                await RestaurarFormularioAsync(OrigenId, DestinoId, VueloId, Clase, CantPersonas, EquipajeValija, EquipajeAdicional, Nombre, Apellido, Dni, Email);
+                await RestaurarFormularioAsync(OrigenId, DestinoId, VueloId, Clase, CantPersonas, Pasajeros);
                 return View("Index");
             }
 
@@ -51,29 +47,25 @@ namespace PasajesAeropuerto.Controllers
 
             var tiposEquipaje = await ObtenerTiposEquipajeAsync();
             ViewBag.Simulacion = CalculadorPrecioPasaje.Calcular(
-                destino!, vuelo!, clase, CantPersonas, EquipajeValija, EquipajeAdicional, tiposEquipaje);
+                destino!, vuelo!, clase, CantPersonas, false, false, tiposEquipaje);
             ViewBag.PreciosVistos = true;
 
-            await RestaurarFormularioAsync(OrigenId, DestinoId, VueloId, clase, CantPersonas, EquipajeValija, EquipajeAdicional, Nombre, Apellido, Dni, Email);
+            await RestaurarFormularioAsync(OrigenId, DestinoId, VueloId, clase, CantPersonas, null);
             return View("Index");
         }
 
         [HttpPost]
         public async Task<IActionResult> AgregarPasaje(
-            string Nombre,
-            string Apellido,
-            string Dni,
-            string Email,
             int OrigenId,
             int DestinoId,
             int VueloId,
             string Clase,
             int CantPersonas,
-            bool EquipajeValija,
-            bool EquipajeAdicional,
+            List<PasajeroFormModel>? Pasajeros,
             bool PreciosVistos)
         {
-            await RestaurarFormularioAsync(OrigenId, DestinoId, VueloId, Clase, CantPersonas, EquipajeValija, EquipajeAdicional, Nombre, Apellido, Dni, Email);
+            var pasajeros = NormalizarPasajeros(Pasajeros, CantPersonas);
+            await RestaurarFormularioAsync(OrigenId, DestinoId, VueloId, Clase, CantPersonas, pasajeros);
 
             if (!PreciosVistos)
             {
@@ -81,13 +73,11 @@ namespace PasajesAeropuerto.Controllers
                 return View("Index");
             }
 
-            if (string.IsNullOrWhiteSpace(Nombre) ||
-                string.IsNullOrWhiteSpace(Apellido) ||
-                string.IsNullOrWhiteSpace(Dni) ||
-                string.IsNullOrWhiteSpace(Email))
+            var errorPasajeros = ValidarPasajeros(pasajeros, CantPersonas);
+            if (errorPasajeros is not null)
             {
-                ViewBag.Error = "Completá todos los datos del pasajero.";
-                await RecalcularYMostrarPreciosAsync(DestinoId, VueloId, Clase, CantPersonas, EquipajeValija, EquipajeAdicional);
+                ViewBag.Error = errorPasajeros;
+                await RecalcularYMostrarPreciosAsync(DestinoId, VueloId, Clase, CantPersonas);
                 return View("Index");
             }
 
@@ -102,24 +92,100 @@ namespace PasajesAeropuerto.Controllers
             var vuelo = await _context.Vuelos.FindAsync(VueloId);
             var clase = string.IsNullOrWhiteSpace(Clase) ? "Economica" : Clase;
             var tiposEquipaje = await ObtenerTiposEquipajeAsync();
-            var simulacion = CalculadorPrecioPasaje.Calcular(
-                destino!, vuelo!, clase, CantPersonas, EquipajeValija, EquipajeAdicional, tiposEquipaje);
+            var total = CalculadorPrecioPasaje.CalcularTotalReserva(
+                destino!,
+                vuelo!,
+                clase,
+                pasajeros.Select(p => (p.EquipajeValija, p.EquipajeAdicional)),
+                tiposEquipaje);
 
-            var pasajero = new Pasajero
+            var reserva = new Reserva
             {
-                Nombre = Nombre.Trim(),
-                Apellido = Apellido.Trim(),
-                Dni = Dni.Trim(),
-                Email = Email.Trim()
+                OrigenId = OrigenId,
+                DestinoId = DestinoId,
+                VueloId = VueloId,
+                Clase = clase,
+                FechaEmision = DateTime.Now,
+                TotalCalculado = total
             };
-            _context.Pasajeros.Add(pasajero);
+            _context.Reservas.Add(reserva);
 
+            foreach (var form in pasajeros)
+            {
+                var pasajero = new Pasajero
+                {
+                    Nombre = form.Nombre.Trim(),
+                    Apellido = form.Apellido.Trim(),
+                    Dni = form.Dni.Trim(),
+                    Email = form.Email.Trim(),
+                    Reserva = reserva
+                };
+                AgregarEquipaje(pasajero, form.EquipajeValija, form.EquipajeAdicional);
+                _context.Pasajeros.Add(pasajero);
+            }
+
+            await _context.SaveChangesAsync();
+
+            TempData["Mensaje"] =
+                $"Pasaje emitido. Reserva #{reserva.Id} — {pasajeros.Count} persona(s) — Total: {reserva.TotalCalculado:C}";
+            return RedirectToAction(nameof(Index));
+        }
+
+        private static List<PasajeroFormModel> NormalizarPasajeros(List<PasajeroFormModel>? pasajeros, int cantPersonas)
+        {
+            var lista = pasajeros ?? new List<PasajeroFormModel>();
+            while (lista.Count < cantPersonas)
+            {
+                lista.Add(new PasajeroFormModel());
+            }
+
+            if (lista.Count > cantPersonas)
+            {
+                lista = lista.Take(cantPersonas).ToList();
+            }
+
+            return lista;
+        }
+
+        private static string? ValidarPasajeros(List<PasajeroFormModel> pasajeros, int cantPersonas)
+        {
+            if (pasajeros.Count != cantPersonas)
+            {
+                return "La cantidad de pasajeros no coincide con la cantidad de personas.";
+            }
+
+            for (var i = 0; i < pasajeros.Count; i++)
+            {
+                var p = pasajeros[i];
+                if (string.IsNullOrWhiteSpace(p.Nombre) ||
+                    string.IsNullOrWhiteSpace(p.Apellido) ||
+                    string.IsNullOrWhiteSpace(p.Dni) ||
+                    string.IsNullOrWhiteSpace(p.Email))
+                {
+                    return $"Completá todos los datos del pasajero {i + 1}.";
+                }
+            }
+
+            var dnis = pasajeros
+                .Select(p => p.Dni.Trim())
+                .Where(d => !string.IsNullOrEmpty(d))
+                .ToList();
+            if (dnis.Count != dnis.Distinct(StringComparer.OrdinalIgnoreCase).Count())
+            {
+                return "No puede haber dos pasajeros con el mismo DNI.";
+            }
+
+            return null;
+        }
+
+        private static void AgregarEquipaje(Pasajero pasajero, bool equipajeValija, bool equipajeAdicional)
+        {
             pasajero.Equipajes.Add(new Equipaje
             {
                 TipoEquipajeId = TipoEquipaje.IdMano,
                 Cantidad = 1
             });
-            if (EquipajeValija)
+            if (equipajeValija)
             {
                 pasajero.Equipajes.Add(new Equipaje
                 {
@@ -127,7 +193,7 @@ namespace PasajesAeropuerto.Controllers
                     Cantidad = 1
                 });
             }
-            if (EquipajeAdicional)
+            if (equipajeAdicional)
             {
                 pasajero.Equipajes.Add(new Equipaje
                 {
@@ -135,25 +201,6 @@ namespace PasajesAeropuerto.Controllers
                     Cantidad = 1
                 });
             }
-
-            var reserva = new Reserva
-            {
-                OrigenId = OrigenId,
-                DestinoId = DestinoId,
-                VueloId = VueloId,
-                Pasajero = pasajero,
-                Clase = clase,
-                CantPersonas = CantPersonas,
-                FechaEmision = DateTime.Now,
-                TotalCalculado = simulacion.Total
-            };
-            _context.Reservas.Add(reserva);
-
-            await _context.SaveChangesAsync();
-
-            TempData["Mensaje"] =
-                $"Pasaje emitido. Reserva #{reserva.Id} — {CantPersonas} persona(s) — Total: {reserva.TotalCalculado:C}";
-            return RedirectToAction(nameof(Index));
         }
 
         private async Task<string?> ValidarDatosViajeAsync(int origenId, int destinoId, int vueloId, int cantPersonas)
@@ -187,8 +234,7 @@ namespace PasajesAeropuerto.Controllers
         }
 
         private async Task RecalcularYMostrarPreciosAsync(
-            int destinoId, int vueloId, string clase, int cantPersonas,
-            bool equipajeValija, bool equipajeAdicional)
+            int destinoId, int vueloId, string clase, int cantPersonas)
         {
             var destino = await _context.Destinos.FindAsync(destinoId);
             var vuelo = await _context.Vuelos.FindAsync(vueloId);
@@ -197,7 +243,7 @@ namespace PasajesAeropuerto.Controllers
             var tiposEquipaje = await ObtenerTiposEquipajeAsync();
             ViewBag.Simulacion = CalculadorPrecioPasaje.Calcular(
                 destino, vuelo, string.IsNullOrWhiteSpace(clase) ? "Economica" : clase,
-                cantPersonas, equipajeValija, equipajeAdicional, tiposEquipaje);
+                cantPersonas, false, false, tiposEquipaje);
             ViewBag.PreciosVistos = true;
         }
 
@@ -207,18 +253,16 @@ namespace PasajesAeropuerto.Controllers
         }
 
         private async Task RestaurarFormularioAsync(
-            int origenId, int destinoId, int vueloId, string? clase, int cantPersonas,
-            bool equipajeValija, bool equipajeAdicional,
-            string? nombre, string? apellido, string? dni, string? email)
+            int origenId,
+            int destinoId,
+            int vueloId,
+            string? clase,
+            int cantPersonas,
+            List<PasajeroFormModel>? pasajeros)
         {
             ViewBag.Clase = string.IsNullOrWhiteSpace(clase) ? "Economica" : clase;
             ViewBag.CantPersonas = cantPersonas;
-            ViewBag.EquipajeValija = equipajeValija;
-            ViewBag.EquipajeAdicional = equipajeAdicional;
-            ViewBag.Nombre = nombre ?? "";
-            ViewBag.Apellido = apellido ?? "";
-            ViewBag.Dni = dni ?? "";
-            ViewBag.Email = email ?? "";
+            ViewBag.Pasajeros = NormalizarPasajeros(pasajeros, cantPersonas);
             await CargarListasAsync(
                 origenId > 0 ? origenId : null,
                 destinoId > 0 ? destinoId : null,

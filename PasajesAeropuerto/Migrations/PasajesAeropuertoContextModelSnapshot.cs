@@ -168,7 +168,12 @@ namespace PasajesAeropuerto.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
+                    b.Property<int?>("ReservaId")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("ReservaId");
 
                     b.ToTable("Pasajeros");
                 });
@@ -180,9 +185,6 @@ namespace PasajesAeropuerto.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("CantPersonas")
-                        .HasColumnType("int");
 
                     b.Property<string>("Clase")
                         .IsRequired()
@@ -198,9 +200,6 @@ namespace PasajesAeropuerto.Migrations
                     b.Property<int>("OrigenId")
                         .HasColumnType("int");
 
-                    b.Property<int>("PasajeroId")
-                        .HasColumnType("int");
-
                     b.Property<decimal>("TotalCalculado")
                         .HasColumnType("decimal(18,2)");
 
@@ -212,8 +211,6 @@ namespace PasajesAeropuerto.Migrations
                     b.HasIndex("DestinoId");
 
                     b.HasIndex("OrigenId");
-
-                    b.HasIndex("PasajeroId");
 
                     b.HasIndex("VueloId");
 
@@ -347,6 +344,16 @@ namespace PasajesAeropuerto.Migrations
                     b.Navigation("TipoEquipaje");
                 });
 
+            modelBuilder.Entity("PasajesAeropuerto.Entities.Pasajero", b =>
+                {
+                    b.HasOne("PasajesAeropuerto.Entities.Reserva", "Reserva")
+                        .WithMany("Pasajeros")
+                        .HasForeignKey("ReservaId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.Navigation("Reserva");
+                });
+
             modelBuilder.Entity("PasajesAeropuerto.Entities.Reserva", b =>
                 {
                     b.HasOne("PasajesAeropuerto.Entities.Destino", "Destino")
@@ -361,12 +368,6 @@ namespace PasajesAeropuerto.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("PasajesAeropuerto.Entities.Pasajero", "Pasajero")
-                        .WithMany("Reservas")
-                        .HasForeignKey("PasajeroId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
                     b.HasOne("PasajesAeropuerto.Entities.Vuelo", "Vuelo")
                         .WithMany()
                         .HasForeignKey("VueloId")
@@ -377,16 +378,17 @@ namespace PasajesAeropuerto.Migrations
 
                     b.Navigation("Origen");
 
-                    b.Navigation("Pasajero");
-
                     b.Navigation("Vuelo");
                 });
 
             modelBuilder.Entity("PasajesAeropuerto.Entities.Pasajero", b =>
                 {
                     b.Navigation("Equipajes");
+                });
 
-                    b.Navigation("Reservas");
+            modelBuilder.Entity("PasajesAeropuerto.Entities.Reserva", b =>
+                {
+                    b.Navigation("Pasajeros");
                 });
 
             modelBuilder.Entity("PasajesAeropuerto.Entities.TipoEquipaje", b =>

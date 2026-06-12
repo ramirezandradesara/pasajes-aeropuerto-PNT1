@@ -1,15 +1,14 @@
 ﻿@using PasajesAeropuerto.Entities
+@using PasajesAeropuerto.Models
 @using PasajesAeropuerto.Services
 @{
     ViewData["Title"] = "Inicio";
     ViewData["FullWidth"] = true;
     var simulacion = ViewBag.Simulacion as SimulacionPrecioResultado;
-    var preciosVistos = ViewBag.PreciosVistos == true;
     var claseSel = ViewBag.Clase as string ?? "Economica";
+    var cantPersonas = (int)(ViewBag.CantPersonas ?? 1);
+    var pasajeros = ViewBag.Pasajeros as List<PasajeroFormModel> ?? new List<PasajeroFormModel>();
     var tiposEquipaje = ViewBag.TiposEquipaje as List<TipoEquipaje> ?? new List<TipoEquipaje>();
-    var tipoMano = tiposEquipaje.FirstOrDefault(t => t.Id == TipoEquipaje.IdMano);
-    var tipoValija = tiposEquipaje.FirstOrDefault(t => t.Id == TipoEquipaje.IdValija);
-    var tipoAdicional = tiposEquipaje.FirstOrDefault(t => t.Id == TipoEquipaje.IdAdicional);
 }
 
 <header class="hero-section">
@@ -95,23 +94,6 @@
                                    value="@(ViewBag.CantPersonas ?? 1)" min="1" max="10"
                                    class="form-control form-control-custom" />
                         </div>
-                        <div class="form-group">
-                            <label>Equipaje:</label>
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" id="EquipajeMano" checked disabled />
-                                <label class="form-check-label" for="EquipajeMano">@(tipoMano?.Nombre ?? "Equipaje de mano") (incluido)</label>
-                            </div>
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" id="EquipajeValija" name="EquipajeValija" value="true"
-                                       @(ViewBag.EquipajeValija == true ? "checked" : "") />
-                                <label class="form-check-label" for="EquipajeValija">@(tipoValija?.Nombre ?? "Valija") (+ @(tipoValija?.Recargo.ToString("C0") ?? "$0"))</label>
-                            </div>
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" id="EquipajeAdicional" name="EquipajeAdicional" value="true"
-                                       @(ViewBag.EquipajeAdicional == true ? "checked" : "") />
-                                <label class="form-check-label" for="EquipajeAdicional">@(tipoAdicional?.Nombre ?? "Equipaje adicional") (+ @(tipoAdicional?.Recargo.ToString("C0") ?? "$0"))</label>
-                            </div>
-                        </div>
                         <div class="mb-4">
                             <button type="submit" formaction="@Url.Action("VerPrecios")" class="btn btn-accent">
                                 <i class="fa-solid fa-calculator me-2"></i>Ver precios
@@ -124,24 +106,14 @@
                         <partial name="_DesglosePrecio" model="simulacion" />
 
                         <div class="form-container paso-pasajero mt-2">
-                            <h2><span class="paso-numero">2</span> Datos del pasajero</h2>
+                            <h2><span class="paso-numero">2</span> Datos de los pasajeros</h2>
+                            <p class="text-muted mb-4">Completá los datos de cada una de las @cantPersonas persona(s) del viaje.</p>
                             <input type="hidden" name="PreciosVistos" value="true" />
-                            <div class="form-group">
-                                <label for="Nombre">Nombre:</label>
-                                <input type="text" id="Nombre" name="Nombre" value="@ViewBag.Nombre" class="form-control form-control-custom" />
-                            </div>
-                            <div class="form-group">
-                                <label for="Apellido">Apellido:</label>
-                                <input type="text" id="Apellido" name="Apellido" value="@ViewBag.Apellido" class="form-control form-control-custom" />
-                            </div>
-                            <div class="form-group">
-                                <label for="Dni">DNI:</label>
-                                <input type="text" id="Dni" name="Dni" value="@ViewBag.Dni" class="form-control form-control-custom" />
-                            </div>
-                            <div class="form-group">
-                                <label for="Email">Email:</label>
-                                <input type="text" id="Email" name="Email" value="@ViewBag.Email" class="form-control form-control-custom" />
-                            </div>
+                            @for (var i = 0; i < cantPersonas; i++)
+                            {
+                                var pasajero = i < pasajeros.Count ? pasajeros[i] : new PasajeroFormModel();
+                                <partial name="_PasajeroForm" model="(pasajero, i, tiposEquipaje)" />
+                            }
                             <div>
                                 <button type="submit" formaction="@Url.Action("AgregarPasaje")" class="btn-submit">
                                     <i class="fa-solid fa-ticket me-2"></i>Emitir pasaje

@@ -25,15 +25,11 @@ namespace PasajesAeropuerto.Entities
 
         public Vuelo Vuelo { get; set; } = null!;
 
-        public int PasajeroId { get; set; }
-
-        public Pasajero Pasajero { get; set; } = null!;
+        public ICollection<Pasajero> Pasajeros { get; set; } = new List<Pasajero>();
 
         [Required]
         [MaxLength(20)]
         public string Clase { get; set; } = string.Empty;
-
-        public int CantPersonas { get; set; }
 
         [Column(TypeName = "decimal(18,2)")]
         public decimal TotalCalculado { get; set; }

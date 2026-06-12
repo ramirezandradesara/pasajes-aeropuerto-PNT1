@@ -74,6 +74,32 @@ namespace PasajesAeropuerto.Services
             };
         }
 
+        public static decimal CalcularTotalReserva(
+            Destino destino,
+            Vuelo vuelo,
+            string clase,
+            IEnumerable<(bool EquipajeValija, bool EquipajeAdicional)> equipajePorPasajero,
+            IReadOnlyList<TipoEquipaje> tiposEquipaje)
+        {
+            var simulacionBase = Calcular(destino, vuelo, clase, 1, false, false, tiposEquipaje);
+            var precioViajePorPersona = simulacionBase.PrecioPorPersona;
+            var recargos = tiposEquipaje.ToDictionary(t => t.Id, t => t.Recargo);
+
+            decimal total = 0m;
+            foreach (var (equipajeValija, equipajeAdicional) in equipajePorPasajero)
+            {
+                var recargoValija = equipajeValija && recargos.TryGetValue(TipoEquipaje.IdValija, out var rv)
+                    ? rv
+                    : 0m;
+                var recargoAdicional = equipajeAdicional && recargos.TryGetValue(TipoEquipaje.IdAdicional, out var ra)
+                    ? ra
+                    : 0m;
+                total += precioViajePorPersona + recargoValija + recargoAdicional;
+            }
+
+            return total;
+        }
+
         public static decimal ObtenerFactorClase(string clase) => clase switch
         {
             "Primera" => 3.5m,

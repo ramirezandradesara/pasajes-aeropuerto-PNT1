@@ -23,8 +23,10 @@ namespace PasajesAeropuerto.Entities
         [MaxLength(150)]
         public string Email { get; set; } = string.Empty;
 
-        public ICollection<Equipaje> Equipajes { get; set; } = new List<Equipaje>();
+        public int? ReservaId { get; set; }
 
-        public ICollection<Reserva> Reservas { get; set; } = new List<Reserva>();
+        public Reserva? Reserva { get; set; }
+
+        public ICollection<Equipaje> Equipajes { get; set; } = new List<Equipaje>();
     }
 }

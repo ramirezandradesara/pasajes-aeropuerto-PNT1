@@ -89,26 +89,6 @@
                     <span class="precio-linea-monto precio-linea-monto-plus">+@Model.RecargoFinDeSemana.ToString("C")</span>
                 </div>
             }
-            @if (Model.EquipajeValija)
-            {
-                <div class="precio-linea precio-linea-extra">
-                    <span class="precio-linea-concepto">
-                        <i class="fa-solid fa-suitcase precio-linea-icon"></i>
-                        Valija
-                    </span>
-                    <span class="precio-linea-monto precio-linea-monto-plus">+@Model.RecargoValija.ToString("C")</span>
-                </div>
-            }
-            @if (Model.EquipajeAdicional)
-            {
-                <div class="precio-linea precio-linea-extra">
-                    <span class="precio-linea-concepto">
-                        <i class="fa-solid fa-box precio-linea-icon"></i>
-                        Equipaje adicional
-                    </span>
-                    <span class="precio-linea-monto precio-linea-monto-plus">+@Model.RecargoEquipajeAdicional.ToString("C")</span>
-                </div>
-            }
 
             <div class="precio-linea precio-linea-subtotal">
                 <span class="precio-linea-concepto">
@@ -136,7 +116,7 @@
 
         <p class="precio-nota">
             <i class="fa-solid fa-circle-info me-1"></i>
-            Los importes son una simulación. Al emitir el pasaje se guardará este total en la reserva.
+            Los importes son una simulación del viaje (sin equipaje). El equipaje se elige al completar los datos del pasajero y se suma al total al emitir.
         </p>
     </div>
 </div>

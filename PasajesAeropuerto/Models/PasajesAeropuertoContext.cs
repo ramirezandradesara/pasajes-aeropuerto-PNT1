@@ -57,11 +57,13 @@ namespace PasajesAeropuerto.Data
                     .HasForeignKey(r => r.VueloId)
                     .OnDelete(DeleteBehavior.Restrict);
 
-                entity.HasOne(r => r.Pasajero)
-                    .WithMany(p => p.Reservas)
-                    .HasForeignKey(r => r.PasajeroId)
-                    .OnDelete(DeleteBehavior.Restrict);
             });
+
+            modelBuilder.Entity<Pasajero>()
+                .HasOne(p => p.Reserva)
+                .WithMany(r => r.Pasajeros)
+                .HasForeignKey(p => p.ReservaId)
+                .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<TipoEquipaje>().HasData(
                 new TipoEquipaje { Id = 1, Nombre = "Equipaje de mano", Recargo = 0.00m },
